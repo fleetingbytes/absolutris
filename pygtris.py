@@ -20,7 +20,7 @@ def read_or_create_config_file(path_to_configfile):
         config.set("Fonts", "# Path to the fontfile")
         config.set("Fonts", "file", "fonts/dejavu/ttf/DejaVuSansMono.ttf")
         config.set("Fonts", "# Default font size")
-        config.set("Fonts", "size", "24")
+        config.set("Fonts", "size", "14")
         with open(path_to_configfile, mode="w", encoding="utf-8") as configfh:
             config.write(configfh)
     config.read(path_to_configfile)
@@ -45,13 +45,13 @@ class Game():
         pygame.init()
         self.screen = pygame.display.set_mode(
                 (
-                    int(self.config["Display"]["window_horizontal"]), 
-                    int(self.config["Display"]["window_vertical"])
+                    self.config.getint("Display", "window_horizontal"), 
+                    self.config.getint("Display", "window_vertical")
                 )
             )
         self.game_font = pygame.freetype.Font(
-                self.config["Fonts"]["file"], 
-                int(self.config["Fonts"]["size"])
+                self.config.get("Fonts", "file"), 
+                self.config.getint("Fonts", "size")
             )
         self.pygame_window_opened = True
         while self.pygame_window_opened:
@@ -73,7 +73,5 @@ class Game():
 if __name__ == "__main__":
     configfilepath = Path("config.ini")
     debug_delete_config(configfilepath)
-    config = read_or_create_config_file(configfilepath)
-    print(config["Display"]["window_horizontal"])
     game = Game(configfilepath)
     game.run_game()
