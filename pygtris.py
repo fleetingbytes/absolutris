@@ -58,6 +58,10 @@ class Game():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.pygame_window_opened = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_q:
+                        self.pygame_window_opened = False
+                        continue
             self.screen.fill((255, 255, 255))
             text_surface, rect = self.game_font.render("Hello World!", (0, 0, 0))
             self.screen.blit(text_surface, (40, 250))
