@@ -12,16 +12,17 @@ def read_or_create_config_file(path_to_configfile):
     config = configparser.ConfigParser(allow_no_value=True)
     config.optionxform = str
     if not path_to_configfile.is_file():
-        config.add_section("Display")
-        config.set("Display", "# Settings related to the program window")
-        config.set("Display", "window_horizontal", "800")
-        config.set("Display", "window_vertical", "600")
-        config.set("Display", "window_background_color", "chocolate")
+        config.add_section("Playfield")
+        config.set("Playfield", "# Settings related to the program window")
+        config.set("Playfield", "window_horizontal", "10")
+        config.set("Playfield", "window_vertical", "22")
+        config.set("Playfield", "fraction_of_vres", "27")
+        config.set("Playfield", "window_background_color", "darkslategray")
         config.add_section("Fonts")
         config.set("Fonts", "# Path to the fontfile")
         config.set("Fonts", "file", "fonts/codeman38_deluxefont/dlxfont.ttf")
         config.set("Fonts", "# Default font size")
-        config.set("Fonts", "size", "16")
+        config.set("Fonts", "size_fraction_of_vres", "67.5")
         config.set("Fonts", "# Default font color")
         config.set("Fonts", "font_color", "black")
         with open(path_to_configfile, mode="w", encoding="utf-8") as configfh:
@@ -46,15 +47,19 @@ class Game():
         self.config = read_or_create_config_file(path_to_configfile)
     def run_game(self):
         pygame.init()
-        self.screen = pygame.display.set_mode(
+        self.current_h = pygame.display.Info().current_h
+        self.current_w = pygame.display.Info().current_w
+        self.scaling = self.current_h // int(self.config.get("Playfield", "fraction_of_vres"))
+        self.playfield = pygame.display.set_mode(
                 (
-                    self.config.getint("Display", "window_horizontal"), 
-                    self.config.getint("Display", "window_vertical")
+                    self.config.getint("Playfield", "window_horizontal") * self.scaling, 
+                    self.config.getint("Playfield", "window_vertical") * self.scaling
                 )
             )
+        self.font_size = int(self.current_h / float(self.config.get("Fonts", "size_fraction_of_vres")))
         self.game_font = pygame.freetype.Font(
                 self.config.get("Fonts", "file"), 
-                self.config.getint("Fonts", "size")
+                self.font_size
             )
         self.pygame_window_opened = True
         while self.pygame_window_opened:
@@ -69,10 +74,10 @@ class Game():
                         if mods & pygame.KMOD_CTRL:
                             self.pygame_window_opened = False
                         continue
-            self.screen.fill((pygame.Color(self.config.get("Display", "window_background_color"))))
+            self.playfield.fill((pygame.Color(self.config.get("Playfield", "window_background_color"))))
             text_surface, _ = self.game_font.render("Hello World!", (pygame.Color(self.config.get("Fonts", "font_color"))))
-            self.screen.blit(text_surface, (40, 250))
-            self.game_font.render_to(self.screen, (40, 350), "Hello better World!", pygame.Color(self.config.get("Fonts", "font_color")))
+            self.playfield.blit(text_surface, (40, 250))
+            self.game_font.render_to(self.playfield, (40, 350), "Hello better World!", pygame.Color(self.config.get("Fonts", "font_color")))
             pygame.display.flip()
         pygame.quit()
 
