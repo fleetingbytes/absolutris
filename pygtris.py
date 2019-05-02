@@ -19,9 +19,11 @@ def read_or_create_config_file(path_to_configfile):
         config.set("Display", "window_background_color", "chocolate")
         config.add_section("Fonts")
         config.set("Fonts", "# Path to the fontfile")
-        config.set("Fonts", "file", "fonts/dejavu/ttf/DejaVuSansMono.ttf")
+        config.set("Fonts", "file", "fonts/codeman38_deluxefont/dlxfont.ttf")
         config.set("Fonts", "# Default font size")
-        config.set("Fonts", "size", "14")
+        config.set("Fonts", "size", "16")
+        config.set("Fonts", "# Default font color")
+        config.set("Fonts", "font_color", "black")
         with open(path_to_configfile, mode="w", encoding="utf-8") as configfh:
             config.write(configfh)
     config.read(path_to_configfile)
@@ -57,16 +59,20 @@ class Game():
         self.pygame_window_opened = True
         while self.pygame_window_opened:
             for event in pygame.event.get():
+                # Assume main game window is closed when pygame is quitting
                 if event.type == pygame.QUIT:
                     self.pygame_window_opened = False
+                # Close main window if Ctrl+Q is pressed
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
-                        self.pygame_window_opened = False
+                        mods = pygame.key.get_mods()
+                        if mods & pygame.KMOD_CTRL:
+                            self.pygame_window_opened = False
                         continue
             self.screen.fill((pygame.Color(self.config.get("Display", "window_background_color"))))
-            text_surface, rect = self.game_font.render("Hello World!", (0, 0, 0))
+            text_surface, _ = self.game_font.render("Hello World!", (pygame.Color(self.config.get("Fonts", "font_color"))))
             self.screen.blit(text_surface, (40, 250))
-            self.game_font.render_to(self.screen, (40, 350), "Hello better World!", (0, 0, 0))
+            self.game_font.render_to(self.screen, (40, 350), "Hello better World!", pygame.Color(self.config.get("Fonts", "font_color")))
             pygame.display.flip()
         pygame.quit()
 
