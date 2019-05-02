@@ -16,6 +16,7 @@ def read_or_create_config_file(path_to_configfile):
         config.set("Display", "# Settings related to the program window")
         config.set("Display", "window_horizontal", "800")
         config.set("Display", "window_vertical", "600")
+        config.set("Display", "window_background_color", "chocolate")
         config.add_section("Fonts")
         config.set("Fonts", "# Path to the fontfile")
         config.set("Fonts", "file", "fonts/dejavu/ttf/DejaVuSansMono.ttf")
@@ -62,7 +63,7 @@ class Game():
                     if event.key == pygame.K_q:
                         self.pygame_window_opened = False
                         continue
-            self.screen.fill((255, 255, 255))
+            self.screen.fill((pygame.Color(self.config.get("Display", "window_background_color"))))
             text_surface, rect = self.game_font.render("Hello World!", (0, 0, 0))
             self.screen.blit(text_surface, (40, 250))
             self.game_font.render_to(self.screen, (40, 350), "Hello better World!", (0, 0, 0))
