@@ -64,19 +64,14 @@ class Game():
         self.init_h_pos = self.config.getint("Initial_Window_Position", "horizontal")
         self.init_v_pos = self.config.getint("Initial_Window_Position", "vertical")
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.init_h_pos},{self.init_v_pos}"
-        # wh = self.config.getint("Playfield", "window_horizontal")
-        # wv = self.config.getint("Playfield", "window_vertical")
         self.playfield = pygame.display.set_mode(
                 (
-                    # wh * self.scaling,
-                    # wv * self.scaling
                     self.config.getint("Playfield", "window_horizontal") * self.scaling, 
                     self.config.getint("Playfield", "window_vertical") * self.scaling
                 )
             )
         self.playfield.fill((pygame.Color(self.config.get("Playfield", "window_background_color"))))
         pygame.display.flip()
-        # self.playfield_surface = pygame.Surface((wh, wv))
         self.dot = pygame.Surface((50,50))
         self.dot.fill(pygame.Color("white"))
         # Setup font
@@ -92,11 +87,17 @@ class Game():
         self.CHANGE_COLOR_EVENT = pygame.USEREVENT
         # Setup timers
         pygame.time.set_timer(self.CHANGE_COLOR_EVENT, 1000)
+        # Prepare list of rectangles to update
+        self.list_of_rectangles_to_update = list()
         # Main game loop
         self.pygame_running = True
         while self.pygame_running:
+            text_rect = (self.game_font.render_to(self.playfield, (40, 350), "Hello better World!"))
+            text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
+            self.list_of_rectangles_to_update.append(text_rect)
+            pygame.display.update(self.list_of_rectangles_to_update)
             self.clock.tick(self.config.getint("Technical", "framerate"))
-            list_of_rectangles_to_update = list()
+            self.list_of_rectangles_to_update = list()
             for event in pygame.event.get():
                 # When user closes window with the mouse
                 if event.type == pygame.QUIT:
@@ -110,13 +111,9 @@ class Game():
                             self.pygame_running = False
                         break
                     if event.key == pygame.K_y:
-                        list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
+                        self.list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
                 if event.type == self.CHANGE_COLOR_EVENT:
                     self.playfield.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
-            text_rect = (self.game_font.render_to(self.playfield, (40, 350), "Hello better World!"))
-            text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
-            list_of_rectangles_to_update.append(text_rect)
-            pygame.display.update(list_of_rectangles_to_update)
         pygame.quit()
 
 
