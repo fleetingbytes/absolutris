@@ -5,7 +5,7 @@ import configparser
 import random
 from pathlib import Path
 
-def read_or_create_config_file(path_to_configfile):
+def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigParser:
     """
     Creates config file with default values
     or reads the current config file "config.ini".
@@ -40,7 +40,7 @@ def read_or_create_config_file(path_to_configfile):
     return config
 
 
-def debug_delete_config(path_to_configfile):
+def debug_delete_config(path_to_configfile: Path) -> None:
     """
     Serves debugging purposes. Deletes the config file.
     """
@@ -52,9 +52,9 @@ class Game():
     """
     A class to run the game
     """
-    def __init__(self, path_to_configfile):
+    def __init__(self, path_to_configfile: Path) -> None:
         self.config = read_or_create_config_file(path_to_configfile)
-    def run_game(self):
+    def run_game(self) -> None:
         pygame.init()
         # Get display resolution
         self.current_h = pygame.display.Info().current_h
@@ -80,7 +80,7 @@ class Game():
                 self.config.get("Fonts", "file"), 
                 self.font_size
             )
-        pygame.freetype.Font.fgcolor = pygame.Color(self.config.get("Fonts", "font_color"))
+        self.font_fgcolor = pygame.Color(self.config.get("Fonts", "font_color"))
         # Setup game clock
         self.clock = pygame.time.Clock()
         # Setup events
@@ -92,7 +92,7 @@ class Game():
         # Main game loop
         self.pygame_running = True
         while self.pygame_running:
-            text_rect = (self.game_font.render_to(self.playfield, (40, 350), "Hello better World!"))
+            text_rect = self.game_font.render_to(self.playfield, (40, 350), "Hello better World!", fgcolor=self.font_fgcolor)
             text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
             self.list_of_rectangles_to_update.append(text_rect)
             pygame.display.update(self.list_of_rectangles_to_update)
