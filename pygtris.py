@@ -3,7 +3,15 @@ import pygame
 import pygame.freetype
 import configparser
 import random
+import logging
+import logging.config
+import logger_conf
 from pathlib import Path
+
+
+# Setup logging
+logging.config.dictConfig(logger_conf.final_conf)
+logger = logging.getLogger("verbose_file_logger")
 
 def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigParser:
     """
@@ -84,8 +92,8 @@ class Game():
         # Setup game clock
         self.clock = pygame.time.Clock()
         # Setup events
-        self.CHANGE_COLOR_EVENT = pygame.USEREVENT
-        # Setup timers
+        self.TICK = pygame.USEREVENT
+        # Create a CHANGE_COLOR_EVENT every 1000 frames
         pygame.time.set_timer(self.CHANGE_COLOR_EVENT, 1000)
         # Prepare list of rectangles to update
         self.list_of_rectangles_to_update = list()
@@ -112,7 +120,7 @@ class Game():
                         break
                     if event.key == pygame.K_y:
                         self.list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
-                if event.type == self.CHANGE_COLOR_EVENT:
+                if event.type == self.TICK:
                     self.playfield.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
         pygame.quit()
 
