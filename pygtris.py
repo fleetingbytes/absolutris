@@ -5,13 +5,13 @@ import configparser
 import random
 import logging
 import logging.config
-import logger_conf
+import logging_conf
 from pathlib import Path
 
 
 # Setup logging
-logging.config.dictConfig(logger_conf.final_conf)
-logger = logging.getLogger("verbose_file_logger")
+logging.config.dictConfig(logging_conf.dict_config)
+logger = logging.getLogger()
 
 def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigParser:
     """
@@ -92,17 +92,24 @@ class Game():
         # Setup game clock
         self.clock = pygame.time.Clock()
         # Setup events
-        self.TICK = pygame.USEREVENT
-        # Create a CHANGE_COLOR_EVENT every 1000 frames
-        pygame.time.set_timer(self.CHANGE_COLOR_EVENT, 1000)
+        self.TICK = pygame.USEREVENT + 0
+        self.DROPSTEP = pygame.USEREVENT + 1
+        # Generate a TICK event every 1000 milliseconds
+        pygame.time.set_timer(self.TICK, 1000)
         # Prepare list of rectangles to update
         self.list_of_rectangles_to_update = list()
-        # Main game loop
+        # Start the game
         self.pygame_running = True
+        logger.info("Starting game")
+        logger.debug("Setting up playfield")
+        logger.debug("Rendering 'Hello better World!'")
+        text_rect = self.game_font.render_to(self.playfield, (40, 350), "Hello better World!", fgcolor=self.font_fgcolor)
+        logger.debug("Moving it into position")
+        text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
+        self.list_of_rectangles_to_update.append(text_rect)
+        # Main game loop
         while self.pygame_running:
-            text_rect = self.game_font.render_to(self.playfield, (40, 350), "Hello better World!", fgcolor=self.font_fgcolor)
-            text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
-            self.list_of_rectangles_to_update.append(text_rect)
+            logger.debug(f"Redrawing {len(self.list_of_rectangles_to_update)} rects in the list of rects")
             pygame.display.update(self.list_of_rectangles_to_update)
             self.clock.tick(self.config.getint("Technical", "framerate"))
             self.list_of_rectangles_to_update = list()
@@ -121,7 +128,10 @@ class Game():
                     if event.key == pygame.K_y:
                         self.list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
                 if event.type == self.TICK:
+                    logger.debug("TICK")
+                    logger.debug("Picking a random color for the playfield")
                     self.playfield.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
+        logger.info("Quitting game")
         pygame.quit()
 
 
@@ -129,4 +139,7 @@ if __name__ == "__main__":
     configfilepath = Path("config.ini")
     debug_delete_config(configfilepath)
     game = Game(configfilepath)
-    game.run_game()
+    try:
+        game.run_game()
+    except Exception as err:
+        logger.exception(f"{err.args[0]} occurred")

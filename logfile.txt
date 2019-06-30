@@ -1,1 +1,0 @@
-Sat 22:21:58.544     DEBUG pygtris <module>: start
