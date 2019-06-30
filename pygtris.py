@@ -62,6 +62,18 @@ class Game():
     """
     def __init__(self, path_to_configfile: Path) -> None:
         self.config = read_or_create_config_file(path_to_configfile)
+    def playfield_tiles_sequence(self, tile: pygame.Surface) -> tuple:
+        """
+        Returns a sequence of tules (tile, (x, y)).
+        Created to fill the playfield with playfield tiles.
+        """
+        horizontal = self.config.getint("Playfield", "window_horizontal")
+        vertical = self.config.getint("Playfield", "window_vertical")
+        tile_width = tile.get_width()
+        tile_height = tile.get_height()
+        for y in range(vertical):
+            for x in range(horizontal):
+                yield (tile, (x * tile_width, y * tile_height))
     def run_game(self) -> None:
         pygame.init()
         # Get display resolution
@@ -72,6 +84,8 @@ class Game():
         self.init_h_pos = self.config.getint("Initial_Window_Position", "horizontal")
         self.init_v_pos = self.config.getint("Initial_Window_Position", "vertical")
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.init_h_pos},{self.init_v_pos}"
+        pygame.display.set_caption("Pygtris")
+        # Setup playfield
         self.playfield = pygame.display.set_mode(
                 (
                     self.config.getint("Playfield", "window_horizontal") * self.scaling, 
@@ -79,6 +93,8 @@ class Game():
                 )
             )
         self.playfield.fill((pygame.Color(self.config.get("Playfield", "window_background_color"))))
+        self.playfield_tile = pygame.image.load("img/playfield_tile.png")
+        self.playfield.blits(self.playfield_tiles_sequence(self.playfield_tile))
         pygame.display.flip()
         self.dot = pygame.Surface((50,50))
         self.dot.fill(pygame.Color("white"))
