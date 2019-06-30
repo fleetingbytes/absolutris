@@ -24,8 +24,8 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.add_section("Playfield")
         config.set("Playfield", "# Settings related to the playfield window")
         config.set("Playfield", "window_horizontal", "10")
-        config.set("Playfield", "window_vertical", "22")
-        config.set("Playfield", "fraction_of_vres", "27")
+        config.set("Playfield", "window_vertical", "24")
+        config.set("Playfield", "fraction_of_vres", "30")
         config.set("Playfield", "window_background_color", "slategray")
         config.set("Playfield", "window_foreground_color", "whitesmoke")
         config.add_section("Fonts")
@@ -109,7 +109,6 @@ class Game():
         self.list_of_rectangles_to_update.append(text_rect)
         # Main game loop
         while self.pygame_running:
-            logger.debug(f"Redrawing {len(self.list_of_rectangles_to_update)} rects in the list of rects")
             pygame.display.update(self.list_of_rectangles_to_update)
             self.clock.tick(self.config.getint("Technical", "framerate"))
             self.list_of_rectangles_to_update = list()
@@ -128,9 +127,9 @@ class Game():
                     if event.key == pygame.K_y:
                         self.list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
                 if event.type == self.TICK:
-                    logger.debug("TICK")
-                    logger.debug("Picking a random color for the playfield")
                     self.playfield.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
+                    self.list_of_rectangles_to_update.append(text_rect)
+                    logger.debug(f"TICK with {len(self.list_of_rectangles_to_update)} rects to redraw")
         logger.info("Quitting game")
         pygame.quit()
 
