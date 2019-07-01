@@ -35,13 +35,18 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.set("Fonts", "size_fraction_of_vres", "67.5")
         config.set("Fonts", "# Default font color")
         config.set("Fonts", "font_color", "black")
-        config.add_section("Initial_Window_Position")
-        config.set("Initial_Window_Position", "# Initial Playfield Window Position")
-        config.set("Initial_Window_Position", "horizontal", "100")
-        config.set("Initial_Window_Position", "vertical", "100")
+        config.add_section("Game_window")
+        config.set("Game_window", "# Game_window title")
+        config.set("Game_window", "title", "Pygtris")
+        config.set("Game_window", "# Initial Playfield Window Position")
+        config.set("Game_window", "horizontal", "100")
+        config.set("Game_window", "vertical", "100")
         config.add_section("Technical")
         config.set("Technical", "# Framerate limit")
         config.set("Technical", "framerate", "100")
+        config.add_section("Graphics")
+        config.set("Graphics", "folder", "img")
+        config.set("Graphics", "empty_playfield_tile", "playfield_tile.png")
         with open(path_to_configfile, mode="w", encoding="utf-8") as configfh:
             config.write(configfh)
     config.read(path_to_configfile)
@@ -62,17 +67,31 @@ class Game():
     """
     def __init__(self, path_to_configfile: Path) -> None:
         self.config = read_or_create_config_file(path_to_configfile)
+        self.load_config()
+    def load_config(self) -> None:
+        self.playfield_window_horizontal = self.config.getint("Playfield", "window_horizontal")
+        self.playfield_window_vertical = self.config.getint("Playfield", "window_vertical")
+        self.playfield_fraction_of_vres = int(self.config.getint("Playfield", "fraction_of_vres"))
+        self.playfield_window_background_color = self.config.get("Playfield", "window_background_color")
+        self.playfield_window_foreground_color = self.config.get("Playfield", "window_foreground_color")
+        self.font_file = Path(self.config.get("Fonts", "file"))
+        self.font_fractional_size = float(self.config.get("Fonts", "size_fraction_of_vres"))
+        self.font_color = self.config.get("Fonts", "font_color")
+        self.window_title = self.config.get("Game_window", "title")
+        self.initial_horizontal_window_position = self.config.get("Game_window", "horizontal")
+        self.initial_vertical_window_position = self.config.get("Game_window", "vertical")
+        self.framerate = self.config.getint("Technical", "framerate")
+        self.graphics_folder = Path(self.config.get("Graphics", "folder"))
+        self.playfield_tile = self.graphics_folder / Path(self.config.get("Graphics", "empty_playfield_tile"))
     def playfield_tiles_sequence(self, tile: pygame.Surface) -> tuple:
         """
         Returns a sequence of tules (tile, (x, y)).
         Created to fill the playfield with playfield tiles.
         """
-        horizontal = self.config.getint("Playfield", "window_horizontal")
-        vertical = self.config.getint("Playfield", "window_vertical")
         tile_width = tile.get_width()
         tile_height = tile.get_height()
-        for y in range(vertical):
-            for x in range(horizontal):
+        for y in range(self.playfield_window_vertical):
+            for x in range(self.playfield_window_horizontal):
                 yield (tile, (x * tile_width, y * tile_height))
     def run_game(self) -> None:
         pygame.init()
@@ -80,31 +99,29 @@ class Game():
         self.current_h = pygame.display.Info().current_h
         self.current_w = pygame.display.Info().current_w
         # Set dimensions of the playfield
-        self.scaling = self.current_h // int(self.config.get("Playfield", "fraction_of_vres"))
-        self.init_h_pos = self.config.getint("Initial_Window_Position", "horizontal")
-        self.init_v_pos = self.config.getint("Initial_Window_Position", "vertical")
-        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.init_h_pos},{self.init_v_pos}"
-        pygame.display.set_caption("Pygtris")
+        self.scaling = self.current_h // self.playfield_fraction_of_vres
+        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.initial_horizontal_window_position},{self.initial_vertical_window_position}"
+        pygame.display.set_caption(self.window_title)
         # Setup playfield
         self.playfield = pygame.display.set_mode(
                 (
-                    self.config.getint("Playfield", "window_horizontal") * self.scaling, 
-                    self.config.getint("Playfield", "window_vertical") * self.scaling
+                    self.playfield_window_horizontal * self.scaling, 
+                    self.playfield_window_vertical * self.scaling
                 )
             )
-        self.playfield.fill((pygame.Color(self.config.get("Playfield", "window_background_color"))))
-        self.playfield_tile = pygame.image.load("img/playfield_tile.png")
+        self.playfield.fill((pygame.Color(self.playfield_window_background_color)))
+        self.playfield_tile = pygame.image.load(str(self.playfield_tile))
         self.playfield.blits(self.playfield_tiles_sequence(self.playfield_tile))
         pygame.display.flip()
         self.dot = pygame.Surface((50,50))
         self.dot.fill(pygame.Color("white"))
         # Setup font
-        self.font_size = int(self.current_h / float(self.config.get("Fonts", "size_fraction_of_vres")))
+        self.font_size = int(self.current_h / self.font_fractional_size)
         self.game_font = pygame.freetype.Font(
-                self.config.get("Fonts", "file"), 
+                str(self.font_file), 
                 self.font_size
             )
-        self.font_fgcolor = pygame.Color(self.config.get("Fonts", "font_color"))
+        self.font_fgcolor = pygame.Color(self.font_color)
         # Setup game clock
         self.clock = pygame.time.Clock()
         # Setup events
@@ -126,7 +143,7 @@ class Game():
         # Main game loop
         while self.pygame_running:
             pygame.display.update(self.list_of_rectangles_to_update)
-            self.clock.tick(self.config.getint("Technical", "framerate"))
+            self.clock.tick(self.framerate)
             self.list_of_rectangles_to_update = list()
             for event in pygame.event.get():
                 # When user closes window with the mouse
