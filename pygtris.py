@@ -6,6 +6,7 @@ import random
 import logging
 import logging.config
 import logging_conf
+import numpy as np
 from pathlib import Path
 
 
@@ -36,13 +37,13 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.set("Fonts", "# Default font color")
         config.set("Fonts", "font_color", "black")
         config.add_section("Game_window")
-        config.set("Game_window", "# Game_window title")
+        config.set("Game_window", "# Game Window Title")
         config.set("Game_window", "title", "Pygtris")
-        config.set("Game_window", "# Initial Playfield Window Position")
+        config.set("Game_window", "# Initial Game Window Position")
         config.set("Game_window", "horizontal", "100")
         config.set("Game_window", "vertical", "100")
         config.add_section("Technical")
-        config.set("Technical", "# Framerate limit")
+        config.set("Technical", "# Framerate Limit")
         config.set("Technical", "framerate", "100")
         config.add_section("Graphics")
         config.set("Graphics", "folder", "img")
@@ -61,6 +62,27 @@ def debug_delete_config(path_to_configfile: Path) -> None:
         path_to_configfile.unlink()
 
 
+class Tile():
+    def __init__(self, hold: pygame.Surface) -> None:
+        self.hold = np.array([hold])
+
+
+class Playfield():
+    def __init__(self, x_dim: int, y_dim: int, sequence) -> None:
+        self.playfield = np.asarray(sequence, dtype=object).reshape(y_dim, x_dim)
+    def serialize(self) -> tuple:
+        """
+        Returns a sequence of tiles (tile: pygame.Surface, (x, y)).
+        Created to fill the blits method of playfield surface.
+        """
+        tile_width = self.playfield[0, 0].hold[-1].get_width()
+        tile_height = self.playfield[0, 0].hold[-1].get_height()
+        rows = self.playfield.shape[0]
+        columns = self.playfield.shape[1]
+        for y in range(rows):
+            for x in range(columns):
+                yield (self.playfield[y, x].hold[-1], (x * tile_width, y * tile_height))
+
 class Game():
     """
     A class to run the game
@@ -75,48 +97,58 @@ class Game():
         self.playfield_window_background_color = self.config.get("Playfield", "window_background_color")
         self.playfield_window_foreground_color = self.config.get("Playfield", "window_foreground_color")
         self.font_file = Path(self.config.get("Fonts", "file"))
-        self.font_fractional_size = float(self.config.get("Fonts", "size_fraction_of_vres"))
+        self.font_size_fraction_of_vres = float(self.config.get("Fonts", "size_fraction_of_vres"))
         self.font_color = self.config.get("Fonts", "font_color")
         self.window_title = self.config.get("Game_window", "title")
         self.initial_horizontal_window_position = self.config.get("Game_window", "horizontal")
         self.initial_vertical_window_position = self.config.get("Game_window", "vertical")
         self.framerate = self.config.getint("Technical", "framerate")
         self.graphics_folder = Path(self.config.get("Graphics", "folder"))
-        self.playfield_tile = self.graphics_folder / Path(self.config.get("Graphics", "empty_playfield_tile"))
-    def playfield_tiles_sequence(self, tile: pygame.Surface) -> tuple:
+        self.playfield_tile_img = self.graphics_folder / Path(self.config.get("Graphics", "empty_playfield_tile"))
+    def setup_UI_playfield(self) -> None:
         """
-        Returns a sequence of tules (tile, (x, y)).
-        Created to fill the playfield with playfield tiles.
+        UI playfield is the area where user sees the tetrominoes falling.
+        UI playfield includes the 10x2 spawn area where tetrominoes spawn.
+        UI playfield includes the 10x2 reserved area above the spawn needed
+        to rotate tetrominoes in their spawn area before their first fall step.
+
+        This function renders the empty UI playfield when the game is started.
+        It fills it with empty playfield tile images.
         """
-        tile_width = tile.get_width()
-        tile_height = tile.get_height()
-        for y in range(self.playfield_window_vertical):
-            for x in range(self.playfield_window_horizontal):
-                yield (tile, (x * tile_width, y * tile_height))
-    def run_game(self) -> None:
-        pygame.init()
-        # Get display resolution
-        self.current_h = pygame.display.Info().current_h
-        self.current_w = pygame.display.Info().current_w
-        # Set dimensions of the playfield
-        self.scaling = self.current_h // self.playfield_fraction_of_vres
-        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.initial_horizontal_window_position},{self.initial_vertical_window_position}"
-        pygame.display.set_caption(self.window_title)
-        # Setup playfield
-        self.playfield = pygame.display.set_mode(
+        # Setup UI playfield
+        logger.debug("Setting up UI playfield")
+        # load tile image
+        tile_image = pygame.image.load(str(self.playfield_tile_img))
+        ## Create a sequence of 240 empty tiles
+        tile_sequence = [Tile(tile_image) for x in range(self.playfield_window_horizontal * self.playfield_window_vertical)]
+        ## Use this sequence to construct an empty playfield
+        self.pf = Playfield(self.playfield_window_horizontal, self.playfield_window_vertical, tile_sequence)
+        self.UI_playfield = pygame.display.set_mode(
                 (
                     self.playfield_window_horizontal * self.scaling, 
                     self.playfield_window_vertical * self.scaling
                 )
             )
-        self.playfield.fill((pygame.Color(self.playfield_window_background_color)))
-        self.playfield_tile = pygame.image.load(str(self.playfield_tile))
-        self.playfield.blits(self.playfield_tiles_sequence(self.playfield_tile))
+        self.UI_playfield.fill((pygame.Color(self.playfield_window_background_color)))
+        self.UI_playfield.blits(self.pf.serialize())
         pygame.display.flip()
+    def run_game(self) -> None:
+        pygame.init()
+        # Get monitor's resolution
+        self.current_display_vres = pygame.display.Info().current_h
+        self.current_display_hres = pygame.display.Info().current_w
+        # Set dimensions of the UI playfield
+        self.scaling = self.current_display_vres // self.playfield_fraction_of_vres
+        # Render the UI playfield
+        self.setup_UI_playfield()
+        # Set initial game window position
+        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.initial_horizontal_window_position},{self.initial_vertical_window_position}"
+        pygame.display.set_caption(self.window_title)
+        # Square dot to display after a key press (testing key input)
         self.dot = pygame.Surface((50,50))
         self.dot.fill(pygame.Color("white"))
         # Setup font
-        self.font_size = int(self.current_h / self.font_fractional_size)
+        self.font_size = int(self.current_display_vres / self.font_size_fraction_of_vres)
         self.game_font = pygame.freetype.Font(
                 str(self.font_file), 
                 self.font_size
@@ -134,9 +166,8 @@ class Game():
         # Start the game
         self.pygame_running = True
         logger.info("Starting game")
-        logger.debug("Setting up playfield")
         logger.debug("Rendering 'Hello better World!'")
-        text_rect = self.game_font.render_to(self.playfield, (40, 350), "Hello better World!", fgcolor=self.font_fgcolor)
+        text_rect = self.game_font.render_to(self.UI_playfield, (40, 350), "Hello better World!", fgcolor=self.font_fgcolor)
         logger.debug("Moving it into position")
         text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
         self.list_of_rectangles_to_update.append(text_rect)
@@ -160,7 +191,7 @@ class Game():
                     if event.key == pygame.K_y:
                         self.list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
                 if event.type == self.TICK:
-                    self.playfield.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
+                    self.UI_playfield.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
                     self.list_of_rectangles_to_update.append(text_rect)
                     logger.debug(f"TICK with {len(self.list_of_rectangles_to_update)} rects to redraw")
         logger.info("Quitting game")
