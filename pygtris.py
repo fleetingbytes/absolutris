@@ -64,7 +64,7 @@ def debug_delete_config(path_to_configfile: Path) -> None:
 
 class Tile():
     def __init__(self, hold: pygame.Surface) -> None:
-        self.hold = np.array([hold])
+        self.hold = [hold]
 
 
 class Playfield():
