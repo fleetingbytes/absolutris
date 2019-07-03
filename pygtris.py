@@ -34,8 +34,6 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.set("Fonts", "file", "fonts/codeman38_deluxefont/dlxfont.ttf")
         config.set("Fonts", "# Default font size")
         config.set("Fonts", "size_fraction_of_vres", "67.5")
-        config.set("Fonts", "# Default font color")
-        config.set("Fonts", "font_color", "black")
         config.add_section("Game_window")
         config.set("Game_window", "# Game Window Title")
         config.set("Game_window", "title", "Pygtris")
@@ -45,14 +43,17 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.set("Game_window", "# Game Window Size")
         config.set("Game_window", "width", "1920")
         config.set("Game_window", "height", "1080")
-        config.set("Game_window", "background_color", "slategray")
-        config.set("Game_window", "foreground_color", "whitesmoke")
         config.add_section("Technical")
         config.set("Technical", "# Framerate Limit")
         config.set("Technical", "framerate", "100")
         config.add_section("Graphics")
         config.set("Graphics", "folder", "img")
         config.set("Graphics", "empty_playfield_tile", "playfield_tile.png")
+        config.add_section("Colors")
+        config.set("Colors", "# Color values need to be separated by comma and space \", \"")
+        config.set("Colors", "game_window_background_color", "18, 18, 18, 255")
+        config.set("Colors", "game_window_foreground_color", "245, 245, 245, 255")
+        config.set("Colors", "font_color", "70, 70, 70, 255")
         with open(path_to_configfile, mode="w", encoding="utf-8") as configfh:
             config.write(configfh)
     config.read(path_to_configfile)
@@ -73,10 +74,8 @@ class Tile():
 
 
 class Playfield():
-    def __init__(self, x_dim: int, y_dim: int, x_pos: int, y_pos: int, sequence) -> None:
+    def __init__(self, x_dim: int, y_dim: int, sequence) -> None:
         self.playfield = np.asarray(sequence, dtype=object).reshape(y_dim, x_dim)
-        self.x_pos = x_pos
-        self.y_pos = y_pos
     def serialize(self) -> tuple:
         """
         Returns a sequence of tiles (tile: pygame.Surface, (x, y)).
@@ -84,11 +83,10 @@ class Playfield():
         """
         tile_width = self.playfield[0, 0].hold[-1].get_width()
         tile_height = self.playfield[0, 0].hold[-1].get_height()
-        rows = self.playfield.shape[0]
-        columns = self.playfield.shape[1]
+        rows, columns = self.playfield.shape
         for y in range(rows):
             for x in range(columns):
-                yield (self.playfield[y, x].hold[-1], (x * tile_width + self.x_pos, y * tile_height + self.y_pos))
+                yield (self.playfield[y, x].hold[-1], (x * tile_width, y * tile_height))
 
 class Game():
     """
@@ -96,27 +94,34 @@ class Game():
     """
     def __init__(self, path_to_configfile: Path) -> None:
         self.config = read_or_create_config_file(path_to_configfile)
+        self.config.getcolor = self.get_color
         self.load_config()
+    def get_color(self, section, key):
+        """
+        This function helps to retrieve the color values from the config file
+        """
+        return pygame.Color(*[int(x) for x in self.config.get(section, key).split(", ")])
     def load_config(self) -> None:
         self.playfield_window_horizontal = self.config.getint("Playfield", "window_horizontal")
         self.playfield_window_vertical = self.config.getint("Playfield", "window_vertical")
         self.playfield_fraction_of_vres = int(self.config.getint("Playfield", "fraction_of_vres"))
-        self.playfield_x_position = int(self.config.getint("Playfield", "x_position"))
-        self.playfield_y_position = int(self.config.getint("Playfield", "y_position"))
+        self.playfield_x_position = self.config.getint("Playfield", "x_position")
+        self.playfield_y_position = self.config.getint("Playfield", "y_position")
         self.font_file = Path(self.config.get("Fonts", "file"))
         self.font_size_fraction_of_vres = float(self.config.get("Fonts", "size_fraction_of_vres"))
-        self.font_color = self.config.get("Fonts", "font_color")
         self.window_title = self.config.get("Game_window", "title")
         self.initial_horizontal_window_position = self.config.get("Game_window", "horizontal")
         self.initial_vertical_window_position = self.config.get("Game_window", "vertical")
         self.game_window_width = self.config.getint("Game_window", "width")
         self.game_window_height = self.config.getint("Game_window", "height")
-        self.game_window_background_color = self.config.get("Game_window", "background_color")
-        self.game_window_foreground_color = self.config.get("Game_window", "foreground_color")
         self.framerate = self.config.getint("Technical", "framerate")
         self.graphics_folder = Path(self.config.get("Graphics", "folder"))
         self.playfield_tile_img = self.graphics_folder / Path(self.config.get("Graphics", "empty_playfield_tile"))
+        self.game_window_background_color = self.config.getcolor("Colors", "game_window_background_color")
+        self.game_window_foreground_color = self.config.getcolor("Colors", "game_window_foreground_color")
+        self.font_color = self.config.getcolor("Colors", "font_color")
     def setup_game_window(self) -> None:
+        pygame.display.set_caption(self.window_title)
         self.game_window = pygame.display.set_mode(
                 (
                     self.game_window_width,
@@ -124,7 +129,14 @@ class Game():
                 ),
                 pygame.NOFRAME
             )
-        self.game_window.fill((pygame.Color(self.game_window_background_color)))
+        self.game_window.fill((self.game_window_background_color))
+        # Prepare surface for playfield
+        self.pf_surface = self.game_window.subsurface(pygame.Rect(self.playfield_x_position, 
+                                                                  self.playfield_y_position, 
+                                                                  self.playfield_x_dim, 
+                                                                  self.playfield_y_dim))
+        self.pf_surface.fill(self.game_window_foreground_color)
+        pygame.display.flip()
     def setup_UI_playfield(self) -> None:
         """
         UI playfield is the area where user sees the tetrominoes falling.
@@ -144,10 +156,8 @@ class Game():
         ## Use this sequence to construct an empty playfield
         self.pf = Playfield(self.playfield_window_horizontal, 
                             self.playfield_window_vertical, 
-                            self.playfield_x_position, 
-                            self.playfield_y_position, 
                             tile_sequence)
-        self.game_window.blits(self.pf.serialize())
+        self.pf_surface.blits(self.pf.serialize())
         pygame.display.flip()
     def run_game(self) -> None:
         # Set initial game window position
@@ -156,12 +166,13 @@ class Game():
         # Get monitor's resolution
         self.current_display_vres = pygame.display.Info().current_h
         self.current_display_hres = pygame.display.Info().current_w
+        self.playfield_x_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_window_horizontal
+        self.playfield_y_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_window_vertical
         # Find out how to scale the game window
         logger.warning("Need to find out how to scale the game window.")
         self.setup_game_window()
         # Render the UI playfield
         self.setup_UI_playfield()
-        pygame.display.set_caption(self.window_title)
         # Square dot to display after a key press (testing key input)
         self.dot = pygame.Surface((50,50))
         self.dot.fill(pygame.Color("white"))
@@ -171,7 +182,6 @@ class Game():
                 str(self.font_file), 
                 self.font_size
             )
-        self.font_fgcolor = pygame.Color(self.font_color)
         # Setup game clock
         self.clock = pygame.time.Clock()
         # Setup events
@@ -185,7 +195,7 @@ class Game():
         self.pygame_running = True
         logger.info("Starting game")
         logger.debug("Rendering 'Hello better World!'")
-        text_rect = self.game_font.render_to(self.game_window, (40, 350), "Hello better World!", fgcolor=self.font_fgcolor)
+        text_rect = self.game_font.render_to(self.game_window, (40, 350), "Hello better World!", fgcolor=self.font_color)
         logger.debug("Moving it into position")
         text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
         self.list_of_rectangles_to_update.append(text_rect)
