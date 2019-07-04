@@ -190,10 +190,10 @@ class Game():
         # Main game loop
         while self.pygame_running:
             pygame.display.update(self.list_of_rectangles_to_update)
-            self.clock.tick(self.framerate)
             # Need to clear the list carefully, because it is shared among instances of classes
             for _ in range(len(self.list_of_rectangles_to_update)):
                 del self.list_of_rectangles_to_update[0]
+            self.clock.tick(self.framerate)
             for event in pygame.event.get():
                 # When user closes window with the mouse
                 if event.type == pygame.QUIT:
