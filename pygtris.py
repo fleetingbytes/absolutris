@@ -79,14 +79,20 @@ class Tile():
 
 
 class Playfield():
-    def __init__(self, x_dim: int, y_dim: int, sequence: Iterator[Tile], img: pygame.Surface) -> None:
+    def __init__(self, x_dim: int, y_dim: int, sequence: Iterator[Tile], img: pygame.Surface, rects_to_update: list) -> None:
         self.tile_array = np.asarray(list(sequence), dtype=object).reshape(y_dim, x_dim)
+        self.rects_to_update = rects_to_update
         self.blit_initial_images(img)
     def blit_initial_images(self, img) -> None:
         rows, columns = self.tile_array.shape
         for row in range(rows):
             for column in range(columns):
                 self.tile_array[row, column].surface.blit(img, (0, 0))
+    def blit(self, x: int, y: int, srf: pygame.Surface) -> None:
+        tile = self.tile_array[x, y].surface
+        rect = tile.blit(srf, (0, 0))
+        self.rects_to_update.append(rect.move(tile.get_abs_offset()))
+
 
 class Game():
     """
@@ -140,8 +146,8 @@ class Game():
         self.game_window.fill((self.game_window_background_color))
         # load tile image
         self.playfield_tile_img = pygame.image.load(str(self.playfield_tile_file))
-        # Create tiles of the playfield
-        self.pf = Playfield(self.playfield_columns, self.playfield_rows, self.create_playfield_tiles(), self.playfield_tile_img)
+        # Create tiles of the playfield and blit their empty tile images
+        self.pf = Playfield(self.playfield_columns, self.playfield_rows, self.create_playfield_tiles(), self.playfield_tile_img, self.list_of_rectangles_to_update)
     def run_game(self) -> None:
         # Set initial game window position
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.initial_horizontal_window_position},{self.initial_vertical_window_position}"
@@ -151,6 +157,8 @@ class Game():
         self.current_display_hres = pygame.display.Info().current_w
         self.playfield_x_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_columns
         self.playfield_y_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_rows
+        # Prepare list of rectangles to update
+        self.list_of_rectangles_to_update = list()
         # Find out how to scale the game window
         logger.warning("Need to find out how to scale the game window.")
         self.setup_game_window()
@@ -171,8 +179,6 @@ class Game():
         self.DROPSTEP = pygame.USEREVENT + 1
         # Generate a TICK event every 1000 milliseconds
         pygame.time.set_timer(self.TICK, 1000)
-        # Prepare list of rectangles to update
-        self.list_of_rectangles_to_update = list()
         # Start the game
         self.pygame_running = True
         logger.info("Starting game")
@@ -185,7 +191,9 @@ class Game():
         while self.pygame_running:
             pygame.display.update(self.list_of_rectangles_to_update)
             self.clock.tick(self.framerate)
-            self.list_of_rectangles_to_update = list()
+            # Need to clear the list carefully, because it is shared among instances of classes
+            for _ in range(len(self.list_of_rectangles_to_update)):
+                del self.list_of_rectangles_to_update[0]
             for event in pygame.event.get():
                 # When user closes window with the mouse
                 if event.type == pygame.QUIT:
@@ -199,10 +207,18 @@ class Game():
                             self.pygame_running = False
                         break
                     if event.key == pygame.K_y:
-                        self.list_of_rectangles_to_update.append(self.playfield.blit(self.dot, (60, 400)))
+                        brick = pygame.image.load("img/brick.png")
+                        tile = self.pf.tile_array[0, 0].surface
+                        rect = tile.blit(brick, (0, 0))
+                        abs_offset = tile.get_abs_offset()
+                        moved_rect = rect.move(abs_offset)
+                        self.list_of_rectangles_to_update.append(moved_rect)
+                    if event.key == pygame.K_k:
+                        # try new function
+                        self.pf.blit(4, 7, pygame.image.load("img/brick.png"))
                 if event.type == self.TICK:
-                    self.game_window.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
-                    self.list_of_rectangles_to_update.append(text_rect)
+                    # self.game_window.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
+                    # self.list_of_rectangles_to_update.append(text_rect)
                     logger.debug(f"TICK with {len(self.list_of_rectangles_to_update)} rects to redraw")
         logger.info("Quitting game")
         pygame.quit()

@@ -1,9 +1,22 @@
-2019-07-04 19:29:02,950     DEBUG pygtris debug_delete_config: Deleting config file
-2019-07-04 19:29:03,330   WARNING pygtris run_game: Need to find out how to scale the game window.
-2019-07-04 19:29:03,365      INFO pygtris run_game: Starting game
-2019-07-04 19:29:03,366     DEBUG pygtris run_game: Rendering 'Hello better World!'
-2019-07-04 19:29:03,367     DEBUG pygtris run_game: Moving it into position
-2019-07-04 19:29:04,368     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-04 19:29:05,361     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-04 19:29:06,363     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-04 19:29:07,018      INFO pygtris run_game: Quitting game
+2019-07-04 21:49:55,555     DEBUG pygtris debug_delete_config: Deleting config file
+2019-07-04 21:49:55,942   WARNING pygtris run_game: Need to find out how to scale the game window.
+2019-07-04 21:49:55,985      INFO pygtris run_game: Starting game
+2019-07-04 21:49:55,986     DEBUG pygtris run_game: Rendering 'Hello better World!'
+2019-07-04 21:49:55,988     DEBUG pygtris run_game: Moving it into position
+2019-07-04 21:49:56,985     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:49:57,987     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:49:58,986     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:49:59,989     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:00,980     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:01,979     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:02,988     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:03,986     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:04,979     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:05,979     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:06,979     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:07,986     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:08,985     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:09,982     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:10,983     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:11,986     DEBUG pygtris run_game: TICK with 0 rects to redraw
+2019-07-04 21:50:12,234      INFO pygtris run_game: Quitting game
