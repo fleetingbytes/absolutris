@@ -7,8 +7,8 @@ import logging
 import logging.config
 import logging_conf
 import numpy as np
+from typing import Iterator
 from pathlib import Path
-
 
 # Setup logging
 logging.config.dictConfig(logging_conf.dict_config)
@@ -24,11 +24,11 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
     if not path_to_configfile.is_file():
         config.add_section("Playfield")
         config.set("Playfield", "# Settings related to the playfield window")
-        config.set("Playfield", "window_horizontal", "10")
-        config.set("Playfield", "window_vertical", "24")
+        config.set("Playfield", "columns", "10")
+        config.set("Playfield", "rows", "24")
         config.set("Playfield", "fraction_of_vres", "30")
-        config.set("Playfield", "x_position", "300")
-        config.set("Playfield", "y_position", "60")
+        config.set("Playfield", "x_position", "26")
+        config.set("Playfield", "y_position", "3")
         config.add_section("Fonts")
         config.set("Fonts", "# Path to the fontfile")
         config.set("Fonts", "file", "fonts/codeman38_deluxefont/dlxfont.ttf")
@@ -64,29 +64,29 @@ def debug_delete_config(path_to_configfile: Path) -> None:
     """
     Serves debugging purposes. Deletes the config file.
     """
+    logger.debug("Deleting config file")
     if path_to_configfile.is_file():
         path_to_configfile.unlink()
 
 
 class Tile():
-    def __init__(self, hold: pygame.Surface) -> None:
-        self.hold = [hold]
+    def __init__(self, surface: pygame.Surface) -> None:
+        """
+        Creates a Tile which is a direct subsurface of the game window.
+        """
+        self.surface = surface
+        self.hold = []
 
 
 class Playfield():
-    def __init__(self, x_dim: int, y_dim: int, sequence) -> None:
-        self.playfield = np.asarray(sequence, dtype=object).reshape(y_dim, x_dim)
-    def serialize(self) -> tuple:
-        """
-        Returns a sequence of tiles (tile: pygame.Surface, (x, y)).
-        Created to fill the blits method of playfield surface.
-        """
-        tile_width = self.playfield[0, 0].hold[-1].get_width()
-        tile_height = self.playfield[0, 0].hold[-1].get_height()
-        rows, columns = self.playfield.shape
-        for y in range(rows):
-            for x in range(columns):
-                yield (self.playfield[y, x].hold[-1], (x * tile_width, y * tile_height))
+    def __init__(self, x_dim: int, y_dim: int, sequence: Iterator[Tile], img: pygame.Surface) -> None:
+        self.tile_array = np.asarray(list(sequence), dtype=object).reshape(y_dim, x_dim)
+        self.blit_initial_images(img)
+    def blit_initial_images(self, img) -> None:
+        rows, columns = self.tile_array.shape
+        for row in range(rows):
+            for column in range(columns):
+                self.tile_array[row, column].surface.blit(img, (0, 0))
 
 class Game():
     """
@@ -102,8 +102,8 @@ class Game():
         """
         return pygame.Color(*[int(x) for x in self.config.get(section, key).split(", ")])
     def load_config(self) -> None:
-        self.playfield_window_horizontal = self.config.getint("Playfield", "window_horizontal")
-        self.playfield_window_vertical = self.config.getint("Playfield", "window_vertical")
+        self.playfield_columns = self.config.getint("Playfield", "columns")
+        self.playfield_rows = self.config.getint("Playfield", "rows")
         self.playfield_fraction_of_vres = int(self.config.getint("Playfield", "fraction_of_vres"))
         self.playfield_x_position = self.config.getint("Playfield", "x_position")
         self.playfield_y_position = self.config.getint("Playfield", "y_position")
@@ -116,10 +116,18 @@ class Game():
         self.game_window_height = self.config.getint("Game_window", "height")
         self.framerate = self.config.getint("Technical", "framerate")
         self.graphics_folder = Path(self.config.get("Graphics", "folder"))
-        self.playfield_tile_img = self.graphics_folder / Path(self.config.get("Graphics", "empty_playfield_tile"))
+        self.playfield_tile_file = self.graphics_folder / Path(self.config.get("Graphics", "empty_playfield_tile"))
         self.game_window_background_color = self.config.getcolor("Colors", "game_window_background_color")
         self.game_window_foreground_color = self.config.getcolor("Colors", "game_window_foreground_color")
         self.font_color = self.config.getcolor("Colors", "font_color")
+    def create_playfield_tiles(self) -> Iterator[Tile]:
+        for y in range(self.playfield_rows):
+            for x in range(self.playfield_columns):
+                rect = pygame.Rect(x * self.playfield_tile_img.get_width() + self.playfield_x_position * self.playfield_fraction_of_vres, 
+                                   y * self.playfield_tile_img.get_height() + self.playfield_y_position * self.playfield_fraction_of_vres, 
+                                   self.playfield_tile_img.get_width(), 
+                                   self.playfield_tile_img.get_height())
+                yield Tile(self.game_window.subsurface(rect))
     def setup_game_window(self) -> None:
         pygame.display.set_caption(self.window_title)
         self.game_window = pygame.display.set_mode(
@@ -130,35 +138,10 @@ class Game():
                 pygame.NOFRAME
             )
         self.game_window.fill((self.game_window_background_color))
-        # Prepare surface for playfield
-        self.pf_surface = self.game_window.subsurface(pygame.Rect(self.playfield_x_position, 
-                                                                  self.playfield_y_position, 
-                                                                  self.playfield_x_dim, 
-                                                                  self.playfield_y_dim))
-        self.pf_surface.fill(self.game_window_foreground_color)
-        pygame.display.flip()
-    def setup_UI_playfield(self) -> None:
-        """
-        UI playfield is the area where user sees the tetrominoes falling.
-        UI playfield includes the 10x2 spawn area where tetrominoes spawn.
-        UI playfield includes the 10x2 reserved area above the spawn needed
-        to rotate tetrominoes in their spawn area before their first fall step.
-
-        This function renders the empty UI playfield when the game is started.
-        It fills it with empty playfield tile images.
-        """
-        # Setup UI playfield
-        logger.debug("Setting up UI playfield")
         # load tile image
-        tile_image = pygame.image.load(str(self.playfield_tile_img))
-        ## Create a sequence of 240 empty tiles
-        tile_sequence = [Tile(tile_image) for x in range(self.playfield_window_horizontal * self.playfield_window_vertical)]
-        ## Use this sequence to construct an empty playfield
-        self.pf = Playfield(self.playfield_window_horizontal, 
-                            self.playfield_window_vertical, 
-                            tile_sequence)
-        self.pf_surface.blits(self.pf.serialize())
-        pygame.display.flip()
+        self.playfield_tile_img = pygame.image.load(str(self.playfield_tile_file))
+        # Create tiles of the playfield
+        self.pf = Playfield(self.playfield_columns, self.playfield_rows, self.create_playfield_tiles(), self.playfield_tile_img)
     def run_game(self) -> None:
         # Set initial game window position
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.initial_horizontal_window_position},{self.initial_vertical_window_position}"
@@ -166,13 +149,12 @@ class Game():
         # Get monitor's resolution
         self.current_display_vres = pygame.display.Info().current_h
         self.current_display_hres = pygame.display.Info().current_w
-        self.playfield_x_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_window_horizontal
-        self.playfield_y_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_window_vertical
+        self.playfield_x_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_columns
+        self.playfield_y_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_rows
         # Find out how to scale the game window
         logger.warning("Need to find out how to scale the game window.")
         self.setup_game_window()
-        # Render the UI playfield
-        self.setup_UI_playfield()
+        pygame.display.flip()
         # Square dot to display after a key press (testing key input)
         self.dot = pygame.Surface((50,50))
         self.dot.fill(pygame.Color("white"))

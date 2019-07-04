@@ -1,21 +1,9 @@
-2019-07-03 21:09:23,066   WARNING pygtris run_game: Need to find out how to scale the game window.
-2019-07-03 21:09:30,163     DEBUG pygtris setup_UI_playfield: Setting up UI playfield
-2019-07-03 21:09:30,169      INFO pygtris run_game: Starting game
-2019-07-03 21:09:30,169     DEBUG pygtris run_game: Rendering 'Hello better World!'
-2019-07-03 21:09:30,171     DEBUG pygtris run_game: Moving it into position
-2019-07-03 21:09:31,170     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:32,173     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:33,173     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:34,164     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:35,171     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:36,170     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:37,170     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:38,172     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:39,167     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:40,173     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:41,171     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:42,164     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:43,173     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:44,172     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:45,170     DEBUG pygtris run_game: TICK with 1 rects to redraw
-2019-07-03 21:09:45,319      INFO pygtris run_game: Quitting game
+2019-07-04 19:29:02,950     DEBUG pygtris debug_delete_config: Deleting config file
+2019-07-04 19:29:03,330   WARNING pygtris run_game: Need to find out how to scale the game window.
+2019-07-04 19:29:03,365      INFO pygtris run_game: Starting game
+2019-07-04 19:29:03,366     DEBUG pygtris run_game: Rendering 'Hello better World!'
+2019-07-04 19:29:03,367     DEBUG pygtris run_game: Moving it into position
+2019-07-04 19:29:04,368     DEBUG pygtris run_game: TICK with 1 rects to redraw
+2019-07-04 19:29:05,361     DEBUG pygtris run_game: TICK with 1 rects to redraw
+2019-07-04 19:29:06,363     DEBUG pygtris run_game: TICK with 1 rects to redraw
+2019-07-04 19:29:07,018      INFO pygtris run_game: Quitting game
