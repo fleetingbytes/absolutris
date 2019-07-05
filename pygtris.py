@@ -207,15 +207,10 @@ class Game():
                             self.pygame_running = False
                         break
                     if event.key == pygame.K_y:
-                        brick = pygame.image.load("img/brick.png")
-                        tile = self.pf.tile_array[0, 0].surface
-                        rect = tile.blit(brick, (0, 0))
-                        abs_offset = tile.get_abs_offset()
-                        moved_rect = rect.move(abs_offset)
-                        self.list_of_rectangles_to_update.append(moved_rect)
+                        self.pf.blit(3, 2, pygame.image.load("img/pattern.png"))
                     if event.key == pygame.K_k:
                         # try new function
-                        self.pf.blit(4, 7, pygame.image.load("img/brick.png"))
+                        self.pf.blit(4, 7, pygame.image.load("img/pattern.png"))
                 if event.type == self.TICK:
                     # self.game_window.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
                     # self.list_of_rectangles_to_update.append(text_rect)
