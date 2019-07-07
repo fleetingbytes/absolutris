@@ -30,45 +30,81 @@ class Tetromino():
         self.r270 = r270
 
 
-I0 = Rotated_Shape((-1, 0), (1, 0), (2, 0))
-I90 = Rotated_Shape((0, 1), (0, -1), (0, -2))
-I180 = Rotated_Shape((1, 0), (-1, 0), (-2, 0))
-I270 = Rotated_Shape((0, -1), (0, 1), (0, 2))
-
-J0 = Rotated_Shape((1, 0), (-1, 0), (-1, -1))
-J90 = Rotated_Shape((0, -1), (0, 1), (-1, 1))
-J180 = Rotated_Shape((-1, 0), (1, 0), (1, 1))
-J270 = Rotated_Shape((0, 1), (0, -1), (1, -1))
-
-L0 = Rotated_Shape((1, 0), (-1, 0), (-1, 1))
-L90 = Rotated_Shape((0, -1), (0, 1), (1, 1))
-L180 = Rotated_Shape((-1, 0), (1, 0), (1, -1))
-L270 = Rotated_Shape((0, 1), (0, -1), (-1, -1))
-
-O0 = Rotated_Shape((1, 0), (1, -1), (0, -1))
-O90 = Rotated_Shape((0, -1), (-1, -1), (-1, 0))
-O180 = Rotated_Shape((-1, 0), (-1, 1), (0, 1))
-O270 = Rotated_Shape((0, 1), (1, 1), (1, 0))
-
-S0 = Rotated_Shape((-1, 0), (0, -1), (1, -1))
-S90 = Rotated_Shape((0, 1), (-1, 0), (-1, -1))
-S180 = Rotated_Shape((1, 0), (0, 1), (-1, 1))
-S270 = Rotated_Shape((0, -1), (1, 0), (1, 1))
-
-T0 = Rotated_Shape((0, 1), (-1, 0), (1, 0))
-T90 = Rotated_Shape((1, 0), (0, 1), (0, -1))
-T180 = Rotated_Shape((0, -1), (1, 0), (-1, 0))
-T270 = Rotated_Shape((-1, 0), (0, -1), (0, 1))
-
-Z0 = Rotated_Shape((1, 0), (0, -1), (-1, -1))
-Z90 = Rotated_Shape((0, -1), (-1, 0), (-1, 1))
-Z180 = Rotated_Shape((-1, 0), (0, 1), (1, 1))
-Z270 = Rotated_Shape((0, 1), (1, 0), (1, -1))
-
-class TetrominoI(Tetromino):
+class Tetromino_I(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
-        Tetromino.__init__(self, I0, I90, I180, I270)
+        Tetromino.__init__(self, 
+                           Rotated_Shape((-1, 0), (1, 0), (2, 0)), 
+                           Rotated_Shape((0, 1), (0, -1), (0, -2)),
+                           Rotated_Shape((1, 0), (-1, 0), (-2, 0)), 
+                           Rotated_Shape((0, -1), (0, 1), (0, 2)),
+                           )
+
+
+class Tetromino_J(Tetromino):
+    def __init__(self):
+        self.img = image.load("img/pattern.png")
+        Tetromino.__init__(self, 
+                           Rotated_Shape((1, 0), (-1, 0), (-1, -1)),
+                           Rotated_Shape((0, -1), (0, 1), (-1, 1)),
+                           Rotated_Shape((-1, 0), (1, 0), (1, 1)),
+                           Rotated_Shape((0, 1), (0, -1), (1, -1)),
+                           )
+
+
+class Tetromino_L(Tetromino):
+    def __init__(self):
+        self.img = image.load("img/pattern.png")
+        Tetromino.__init__(self, 
+                           Rotated_Shape((1, 0), (-1, 0), (-1, -1)),
+                           Rotated_Shape((0, -1), (0, 1), (-1, 1)),
+                           Rotated_Shape((-1, 0), (1, 0), (1, 1)),
+                           Rotated_Shape((0, 1), (0, -1), (1, -1)),
+                           )
+
+
+class Tetromino_O(Tetromino):
+    def __init__(self):
+        self.img = image.load("img/pattern.png")
+        Tetromino.__init__(self, 
+                           Rotated_Shape((1, 0), (1, -1), (0, -1)),
+                           Rotated_Shape((0, -1), (-1, -1), (-1, 0)),
+                           Rotated_Shape((-1, 0), (-1, 1), (0, 1)),
+                           Rotated_Shape((0, 1), (1, 1), (1, 0)),
+                           )
+
+
+class Tetromino_S(Tetromino):
+    def __init__(self):
+        self.img = image.load("img/pattern.png")
+        Tetromino.__init__(self, 
+                           Rotated_Shape((-1, 0), (0, -1), (1, -1)),
+                           Rotated_Shape((0, 1), (-1, 0), (-1, -1)),
+                           Rotated_Shape((1, 0), (0, 1), (-1, 1)),
+                           Rotated_Shape((0, -1), (1, 0), (1, 1)),
+                           )
+
+
+class Tetromino_T(Tetromino):
+    def __init__(self):
+        self.img = image.load("img/pattern.png")
+        Tetromino.__init__(self, 
+                           Rotated_Shape((0, 1), (-1, 0), (1, 0)),
+                           Rotated_Shape((1, 0), (0, 1), (0, -1)),
+                           Rotated_Shape((0, -1), (1, 0), (-1, 0)),
+                           Rotated_Shape((-1, 0), (0, -1), (0, 1)),
+                           )
+
+
+class Tetromino_Z(Tetromino):
+    def __init__(self):
+        self.img = image.load("img/pattern.png")
+        Tetromino.__init__(self, 
+                           Rotated_Shape((1, 0), (0, -1), (-1, -1)),
+                           Rotated_Shape((0, -1), (-1, 0), (-1, 1)),
+                           Rotated_Shape((-1, 0), (0, 1), (1, 1)),
+                           Rotated_Shape((0, 1), (1, 0), (1, -1)),
+                           )
 
 
 if __name__ == "__main__":
