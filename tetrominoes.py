@@ -28,6 +28,10 @@ class Tetromino():
         self.r90 = r90
         self.r180 = r180
         self.r270 = r270
+        self.current_rotation = self.r0
+        self.spawn_offset = 0
+    def __call__(self):
+        return self.current_rotation()
 
 
 class Tetromino_I(Tetromino):
@@ -61,6 +65,7 @@ class Tetromino_L(Tetromino):
                            Rotated_Shape((-1, 0), (1, 0), (1, 1)),
                            Rotated_Shape((0, 1), (0, -1), (1, -1)),
                            )
+        self.spawn_offset = -1
 
 
 class Tetromino_O(Tetromino):
@@ -83,6 +88,8 @@ class Tetromino_S(Tetromino):
                            Rotated_Shape((1, 0), (0, 1), (-1, 1)),
                            Rotated_Shape((0, -1), (1, 0), (1, 1)),
                            )
+    def __call__(self):
+        return super().__call__()
 
 
 class Tetromino_T(Tetromino):
@@ -94,6 +101,7 @@ class Tetromino_T(Tetromino):
                            Rotated_Shape((0, -1), (1, 0), (-1, 0)),
                            Rotated_Shape((-1, 0), (0, -1), (0, 1)),
                            )
+        self.spawn_offset = -1
 
 
 class Tetromino_Z(Tetromino):

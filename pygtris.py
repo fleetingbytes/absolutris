@@ -7,6 +7,7 @@ import logging
 import logging.config
 import logging_conf
 import numpy as np
+import tetrominoes
 from typing import Iterator
 from pathlib import Path
 
@@ -29,6 +30,8 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.set("Playfield", "fraction_of_vres", "30")
         config.set("Playfield", "x_position", "26")
         config.set("Playfield", "y_position", "3")
+        config.set("Playfield", "spawn_x_coordinate", "4")
+        config.set("Playfield", "spawn_y_coordinate", "4")
         config.add_section("Fonts")
         config.set("Fonts", "# Path to the fontfile")
         config.set("Fonts", "file", "fonts/codeman38_deluxefont/dlxfont.ttf")
@@ -79,19 +82,46 @@ class Tile():
 
 
 class Playfield():
-    def __init__(self, x_dim: int, y_dim: int, sequence: Iterator[Tile], img: pygame.Surface, rects_to_update: list) -> None:
+    def __init__(self, 
+                 x_dim: int, 
+                 y_dim: int, 
+                 sequence: Iterator[Tile], 
+                 img: pygame.Surface, 
+                 rects_to_update: list, 
+                 spawn_x_coordinate,
+                 spawn_y_coordinate) -> None:
         self.tile_array = np.asarray(list(sequence), dtype=object).reshape(y_dim, x_dim)
         self.rects_to_update = rects_to_update
         self.blit_initial_images(img)
+        self.spawn_x_coordinate = spawn_x_coordinate
+        self.spawn_y_coordinate = spawn_y_coordinate
     def blit_initial_images(self, img) -> None:
         rows, columns = self.tile_array.shape
         for row in range(rows):
             for column in range(columns):
-                self.tile_array[row, column].surface.blit(img, (0, 0))
-    def blit(self, x: int, y: int, srf: pygame.Surface) -> None:
+                self.blyt(row, column, img)
+    def blyt(self, x: int, y: int, srf: pygame.Surface) -> None:
+        """
+        Custom version of pygame.Surface.blit. I called it blyt to be aware of its distinction.
+        It blits an image (srf) on the tile under [x, y], puts the image into this tile's hold,
+        and adds the rectangle of the blitting into the list of the rectangles to update.
+        """
+        hold = self.tile_array[x, y].hold
         tile = self.tile_array[x, y].surface
         rect = tile.blit(srf, (0, 0))
         self.rects_to_update.append(rect.move(tile.get_abs_offset()))
+        hold.append(srf)
+    def spawn_tetromino(self, tetromino):
+        """
+        This will render a tetrominoes current rotated shape
+        in the playfield.
+
+        It takes the relative coordinate pairs the current shape delivers
+        and blits the tetromino's image into the corresponding playfield's
+        coordinates
+        """
+        for x, y in tetromino():
+            self.blyt(self.spawn_x_coordinate + x, self.spawn_y_coordinate + y + tetromino.spawn_offset, tetromino.img)
 
 
 class Game():
@@ -113,6 +143,8 @@ class Game():
         self.playfield_fraction_of_vres = int(self.config.getint("Playfield", "fraction_of_vres"))
         self.playfield_x_position = self.config.getint("Playfield", "x_position")
         self.playfield_y_position = self.config.getint("Playfield", "y_position")
+        self.playfield_x_spawn = self.config.getint("Playfield", "spawn_x_coordinate")
+        self.playfield_y_spawn = self.config.getint("Playfield", "spawn_y_coordinate")
         self.font_file = Path(self.config.get("Fonts", "file"))
         self.font_size_fraction_of_vres = float(self.config.get("Fonts", "size_fraction_of_vres"))
         self.window_title = self.config.get("Game_window", "title")
@@ -147,7 +179,14 @@ class Game():
         # load tile image
         self.playfield_tile_img = pygame.image.load(str(self.playfield_tile_file))
         # Create tiles of the playfield and blit their empty tile images
-        self.pf = Playfield(self.playfield_columns, self.playfield_rows, self.create_playfield_tiles(), self.playfield_tile_img, self.list_of_rectangles_to_update)
+        self.pf = Playfield(self.playfield_columns, 
+                            self.playfield_rows, 
+                            self.create_playfield_tiles(), 
+                            self.playfield_tile_img, 
+                            self.list_of_rectangles_to_update,
+                            self.playfield_x_spawn,
+                            self.playfield_y_spawn,
+                            )
     def run_game(self) -> None:
         # Set initial game window position
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.initial_horizontal_window_position},{self.initial_vertical_window_position}"
@@ -207,10 +246,12 @@ class Game():
                             self.pygame_running = False
                         break
                     if event.key == pygame.K_y:
-                        self.pf.blit(3, 2, pygame.image.load("img/pattern.png"))
+                        self.pf.blyt(3, 2, pygame.image.load("img/pattern.png"))
                     if event.key == pygame.K_k:
                         # try new function
-                        self.pf.blit(4, 7, pygame.image.load("img/pattern.png"))
+                        self.pf.blyt(4, 7, pygame.image.load("img/pattern.png"))
+                    if event.key == pygame.K_s:
+                        self.pf.spawn_tetromino(tetrominoes.Tetromino_S())
                 if event.type == self.TICK:
                     # self.game_window.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
                     # self.list_of_rectangles_to_update.append(text_rect)
