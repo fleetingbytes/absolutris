@@ -51,11 +51,12 @@ class Tetromino_J(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         Tetromino.__init__(self, 
+                           Rotated_Shape((-1, 0), (1, 0), (1, 1)),
+                           Rotated_Shape((0, 1), (0, -1), (-1, 1)),
                            Rotated_Shape((1, 0), (-1, 0), (-1, -1)),
                            Rotated_Shape((0, -1), (0, 1), (-1, 1)),
-                           Rotated_Shape((-1, 0), (1, 0), (1, 1)),
-                           Rotated_Shape((0, 1), (0, -1), (1, -1)),
                            )
+        self.spawn_offset = -1
     def __call__(self):
         return super().__call__()
 
@@ -64,10 +65,10 @@ class Tetromino_L(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         Tetromino.__init__(self, 
-                           Rotated_Shape((1, 0), (-1, 0), (-1, -1)),
-                           Rotated_Shape((0, -1), (0, 1), (-1, 1)),
-                           Rotated_Shape((-1, 0), (1, 0), (1, 1)),
-                           Rotated_Shape((0, 1), (0, -1), (1, -1)),
+                           Rotated_Shape((1, 0), (-1, 0), (-1, 1)),
+                           Rotated_Shape((0, -1), (0, 1), (1, 1)),
+                           Rotated_Shape((-1, 0), (1, 0), (1, -1)),
+                           Rotated_Shape((0, 1), (0, -1), (-1, -1)),
                            )
         self.spawn_offset = -1
     def __call__(self):
@@ -96,7 +97,6 @@ class Tetromino_S(Tetromino):
                            Rotated_Shape((1, 0), (0, 1), (-1, 1)),
                            Rotated_Shape((0, -1), (1, 0), (1, 1)),
                            )
-        self.spawn_offset = -1
     def __call__(self):
         return super().__call__()
 

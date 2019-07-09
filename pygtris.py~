@@ -30,7 +30,7 @@ def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigP
         config.set("Playfield", "fraction_of_vres", "30")
         config.set("Playfield", "x_position", "26")
         config.set("Playfield", "y_position", "3")
-        config.set("Playfield", "spawn_row", "4")
+        config.set("Playfield", "spawn_row", "3")
         config.set("Playfield", "spawn_column", "4")
         config.add_section("Fonts")
         config.set("Fonts", "# Path to the fontfile")
