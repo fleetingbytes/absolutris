@@ -112,9 +112,9 @@ class Playfield():
         and adds the rectangle of the blitting into the list of the rectangles to update.
         """
         hold = self.tile_array[row, column].hold
-        tile = self.tile_array[row, column].surface
-        rect = tile.blit(srf, (0, 0))
-        self.rects_to_update.append(rect.move(tile.get_abs_offset()))
+        tile_surf = self.tile_array[row, column].surface
+        rect = tile_surf.blit(srf, (0, 0))
+        self.rects_to_update.append(rect.move(tile_surf.get_abs_offset()))
         hold.append(srf)
     def clear_all_tiles(self) -> None:
         # find all tiles which hold something, for debugging
@@ -215,9 +215,6 @@ class Game():
         logger.warning("Need to find out how to scale the game window.")
         self.setup_game_window()
         pygame.display.flip()
-        # Square dot to display after a key press (testing key input)
-        self.dot = pygame.Surface((50,50))
-        self.dot.fill(pygame.Color("white"))
         # Setup font
         self.font_size = int(self.current_display_vres / self.font_size_fraction_of_vres)
         self.game_font = pygame.freetype.Font(
@@ -257,9 +254,9 @@ class Game():
                         mods = pygame.key.get_mods()
                         if mods & pygame.KMOD_CTRL:
                             self.pygame_running = False
+                            break
                         logger.debug("Clearing all tiles")
                         self.pf.clear_all_tiles()
-                        break
                     if event.key == pygame.K_y:
                         self.pf.blyt(9, 23, pygame.image.load("img/pattern.png"))
                     if event.key == pygame.K_k:
