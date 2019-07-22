@@ -92,7 +92,7 @@ def set_logfile_path(log_file_path: str) -> None:
     If you only need the root logger which outputs to console and your defined file
     get the root logger.
     
-        logging.getLogger()
+        logging.getLogger(__name__)
 
     If you want an additional custom logger, get it like this instead:
 

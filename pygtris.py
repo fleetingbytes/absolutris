@@ -7,13 +7,15 @@ import logging
 import logging.config
 import logging_conf
 import numpy as np
-import tetrominoes
 from typing import Iterator
 from pathlib import Path
+# own modules
+import tetrominoes
+import generator
 
 # Setup logging
 logging.config.dictConfig(logging_conf.dict_config)
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 def read_or_create_config_file(path_to_configfile: Path) -> configparser.ConfigParser:
     """
@@ -72,6 +74,35 @@ def debug_delete_config(path_to_configfile: Path) -> None:
         path_to_configfile.unlink()
 
 
+class Rectlist(list):
+    """
+    A variant of a list which keeps memory of its highest member count.
+    It also keeps track of how many items have been added since last reset.
+    """
+    def __init__(self):
+        self.max_items = 0
+        self.added_items = 0
+        super().__init__()
+    def update_max(self):
+        if self.max_items < len(self):
+            self.max_items = len(self)
+    def appendr(self, item):
+        self.append(item)
+        self.added_items = self.added_items + 1
+        self.update_max()
+    def extendr(self, itr):
+        self.extend(itr)
+        self.added_items = self.added_items + len(itr)
+        self.update_max()
+    def reset_max(self):
+        self.max_items = 0
+    def reset_added(self):
+        self.added_items = 0
+    def reset(self):
+        self.reset_max()
+        self.reset_added()
+
+
 class Tile():
     def __init__(self, surface: pygame.Surface) -> None:
         """
@@ -114,7 +145,7 @@ class Playfield():
         hold = self.tile_array[row, column].hold
         tile_surf = self.tile_array[row, column].surface
         rect = tile_surf.blit(srf, (0, 0))
-        self.rects_to_update.append(rect.move(tile_surf.get_abs_offset()))
+        self.rects_to_update.appendr(rect.move(tile_surf.get_abs_offset()))
         hold.append(srf)
     def clear_all_tiles(self) -> None:
         # find all tiles which hold something, for debugging
@@ -124,7 +155,7 @@ class Playfield():
                 if not self.tile_array[row, column].is_empty():
                     self.tile_array[row, column].hold = []
                     self.blyt(column, row, self.empty_tile_img)
-    def spawn_tetromino(self, tetromino):
+    def draw_tetromino(self, tetromino):
         """
         This will render a tetrominoes current rotated shape
         in the playfield.
@@ -210,7 +241,7 @@ class Game():
         self.playfield_x_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_columns
         self.playfield_y_dim = self.current_display_vres / self.playfield_fraction_of_vres * self.playfield_rows
         # Prepare list of rectangles to update
-        self.list_of_rectangles_to_update = list()
+        self.list_of_rectangles_to_update = Rectlist()
         # Find out how to scale the game window
         logger.warning("Need to find out how to scale the game window.")
         self.setup_game_window()
@@ -235,7 +266,7 @@ class Game():
         text_rect = self.game_font.render_to(self.game_window, (40, 350), "Hello better World!", fgcolor=self.font_color)
         logger.debug("Moving it into position")
         text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
-        self.list_of_rectangles_to_update.append(text_rect)
+        self.list_of_rectangles_to_update.appendr(text_rect)
         # Main game loop
         while self.pygame_running:
             pygame.display.update(self.list_of_rectangles_to_update)
@@ -257,29 +288,23 @@ class Game():
                             break
                         logger.debug("Clearing all tiles")
                         self.pf.clear_all_tiles()
-                    if event.key == pygame.K_y:
-                        self.pf.blyt(9, 23, pygame.image.load("img/pattern.png"))
-                    if event.key == pygame.K_k:
-                        # try new function
-                        self.pf.blyt(4, 7, pygame.image.load("img/pattern.png"))
-                    if event.key == pygame.K_i:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_I())
-                    if event.key == pygame.K_j:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_J())
-                    if event.key == pygame.K_l:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_L())
-                    if event.key == pygame.K_o:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_O())
-                    if event.key == pygame.K_s:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_S())
-                    if event.key == pygame.K_t:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_T())
-                    if event.key == pygame.K_z:
-                        self.pf.spawn_tetromino(tetrominoes.Tetromino_Z())
+                    if event.key == pygame.K_KP1:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_I())
+                    if event.key == pygame.K_KP2:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_J())
+                    if event.key == pygame.K_KP3:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_L())
+                    if event.key == pygame.K_KP4:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_O())
+                    if event.key == pygame.K_KP5:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_S())
+                    if event.key == pygame.K_KP6:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_T())
+                    if event.key == pygame.K_KP7:
+                        self.pf.draw_tetromino(tetrominoes.Tetromino_Z())
                 if event.type == self.TICK:
-                    # self.game_window.fill(pygame.Color(random.randint(0,255), random.randint(0,255), random.randint(0,255), 0) )
-                    # self.list_of_rectangles_to_update.append(text_rect)
-                    logger.debug(f"TICK with {len(self.list_of_rectangles_to_update)} rects to redraw")
+                    logger.debug(f"TICK with {self.list_of_rectangles_to_update.added_items} rects to redraw")
+                    self.list_of_rectangles_to_update.reset()
         logger.info("Quitting game")
         pygame.quit()
 
