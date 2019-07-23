@@ -54,7 +54,7 @@ def one_I_in_7(rs: Random_Source):
     maxlen = 7
     bag = deque([], maxlen)
     logger.debug("filling the bag")
-    while len(bag) < maxlen:
+    while len(bag) < maxlen -1:
         to_append = next(rs)
         if to_append not in bag:
             logger.debug(f"{to_append} is not in the bag")
@@ -62,7 +62,13 @@ def one_I_in_7(rs: Random_Source):
             logger.debug(f"added {to_append} to the bag")
         else:
             logger.debug(f"discarding {to_append}, it is already in the bag")
-    logger.debug("bag filled")
+    logger.debug("bag is missing one more number.")
+    bag_has = set(bag)
+    logger.debug(f"Currently we have: {bag_has}")
+    bag_hasnt = set(range(maxlen))
+    bag_hasnt.difference_update(bag_has)
+    logger.debug(f"but is missing {bag_hasnt}, appending {bag_hasnt}")
+    bag.append(bag_hasnt.pop())
     yield bag
 
 
@@ -110,13 +116,13 @@ class Unpacker():
         return result
     def show_next(self, n: int):
         try:
-            return tuple(next(self) for _ in range(n))
+            return tuple(self.got_bag.popleft() for _ in range(n))
         except IndexError as err:
             logger.exception("Got an IndexError in Unpacker. This should not happen")
 
 
 gen_dict = {"python9001": Random_Source(function=gen.generate),
-            "randint17": Random_Source(seed=9001, set_seed=random.seed, function=random.randint, args=(1, 7)),
+            "randint06": Random_Source(seed=9001, set_seed=random.seed, function=random.randint, args=(0, 6)),
             "ones": Random_Source(function=ones.generate),
             }
 
@@ -124,16 +130,4 @@ gen_dict = {"python9001": Random_Source(function=gen.generate),
 if __name__ == "__main__":
     u = Unpacker(packer_dict["one_I_in_7"], gen_dict["python9001"])
     for _ in range(8):
-        print(u.next())
-    logger.debug(f"======= CHANGING PACKER WHILE BAG IS NOT EMPTY ========")
-    u.packer = packer_dict["seven_ones"]
-    for _ in range(10):
-        print(u.next())
-    logger.debug("========= CHANGING RANDOM SOURCE WHILE BAG IS NOT EMPTY ======")
-    u.rs = gen_dict["ones"]
-    for _ in range(7):
-        print(u.next())
-    logger.debug(f"======= CHANGING PACKER WHILE BAG IS NOT EMPTY ========")
-    u.packer = packer_dict["no_rules"]
-    for _ in range(10):
         print(u.next())
