@@ -19,6 +19,7 @@
 
 import generators.python9001.python9001 as gen
 import generators.ones.ones as ones
+import generators.primus.primus as primus
 from collections import deque
 from typing import Callable
 import random
@@ -124,6 +125,7 @@ class Unpacker():
 gen_dict = {"python9001": Random_Source(function=gen.generate),
             "randint06": Random_Source(seed=9001, set_seed=random.seed, function=random.randint, args=(0, 6)),
             "ones": Random_Source(function=ones.generate),
+            "primus": Random_Source(function=primus.generate),
             }
 
 
@@ -131,3 +133,6 @@ if __name__ == "__main__":
     u = Unpacker(packer_dict["one_I_in_7"], gen_dict["python9001"])
     for _ in range(8):
         print(u.next())
+    r = Unpacker(packer_dict["no_rules"], gen_dict["primus"])
+    for _ in range(100):
+        print(r.next())
