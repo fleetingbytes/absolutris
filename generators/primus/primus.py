@@ -8,12 +8,11 @@ import logging_conf
 logging.config.dictConfig(logging_conf.dict_config)
 logger = logging.getLogger(__name__)
 
-# Sieve of Eratosthenes
-# Code by David Eppstein, UC Irvine, 28 Feb 2002
-# http://code.activestate.com/recipes/117119/
-
 def gen_primes():
-    """ Generate an infinite sequence of prime numbers.
+    """ # Sieve of Eratosthenes
+        # Code by David Eppstein, UC Irvine, 28 Feb 2002
+        # http://code.activestate.com/recipes/117119/
+        Generate an infinite sequence of prime numbers.
     """
     # Maps composites to primes witnessing their compositeness.
     # This is memory efficient, as the sieve is not "run forward"
@@ -46,19 +45,19 @@ def gen_primes():
         
         q += 1
 
-def gen_bags():
+def return_last_digit():
     for prime in gen_primes():
         # convert it to base 7:
         prime7 = numpy.base_repr(prime, base=7)
         # return the last digit:
         yield int(prime7[-1], base=7)
 
-generator = gen_bags()
+number_generator = return_last_digit()
 
 def generate():
-    return next(generator)
+    return next(number_generator)
 
 
-if __name__ == "primus":
-    for _ in range(20000):
+if __name__ == "__main__":
+    for _ in range(20):
         logger.debug(f"{generate()}")
