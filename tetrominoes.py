@@ -46,7 +46,7 @@ class Mino():
     def __iter__(self):
         return iter(tuple((self.column, self.row)))
     def __repr__(self):
-        return f"<Mino(col={self.column}, row={self.row})>"
+        return f"Mino(col={self.column}, row={self.row})"
 
 
 class Tetromino():
@@ -63,6 +63,8 @@ class Tetromino():
         self.spawn_offset = 0
     def __iter__(self):
         return iter(tuple((self.mino_0, self.mino_1, self.mino_2, self.mino_3)))
+    def __repr__(self):
+        return f"Tetromino({self.mino_0.column}, {self.mino_0.row}), {self.mino_1.column}, {self.mino_row}), {self.mino_2.column}, {self.mino_2.row}, {self.mino_3.column}, {self.mino_3.row})" 
     def rotate(self, n: int):
         for mino in self:
             mino.rotate(n)

@@ -113,22 +113,22 @@ packer_dict = {"one_I_in_7": one_I_in_7,
 
 
 class Unpacker():
-    def __init__(self, packer: Callable[[Random_Source], deque], rs: Random_Source):
+    def __init__(self, packer: Callable[[Random_Source], deque], rs: Random_Source) -> None:
         self.packer = packer
         self.rs = rs
         self.got_bag = deque([], 0)
         logger.debug(f"initialized unpacker with {self.got_bag}")
         self.next_queue = deque([], 7)
-    def request_next(self):
+    def request_next(self) -> None:
         """
            Requests next number from the random source and appends it
            to the next_queue
         """
         try:
-            logger.debug(f"trying popleft() from {self.got_bag}")
+            logger.debug(f"Unpacker requesting next piece from current bag: {self.got_bag}")
             result = self.got_bag.popleft()
         except IndexError:
-            logger.debug("requesting new bag")
+            logger.debug("Unpacker requesting new bag")
             self.got_bag = next(self.packer(self.rs))
             logger.debug(f"got new bag: {self.got_bag}, popping left...")
             result = self.got_bag.popleft()
@@ -136,14 +136,30 @@ class Unpacker():
         logger.debug(f"Appended {result} to the next_queue: {self.next_queue}")
     def spawn_next(self):
         try:
+            logger.debug("Unpacker trying to spawn next piece...")
             result = self.next_queue.popleft()
+            logger.debug(f"Unpacker will spawn {result} soon...")
             self.request_next()
         except IndexError:
             logger.debug("The next_queue seems to be empty. Requesting next piece...")
             self.request_next()
             result = self.next_queue.popleft()
             self.request_next()
+        logger.debug(f"Unpacker spawning {result}")
         return result
+    def preview_next(self, number: int) -> None:
+        logger.debug("Entered preview")
+        for i in range(number):
+            logger.debug(f"Trying to preview next {number} pieces")
+            try:
+                logger.debug(f"See what {self.next_queue} has at index {i}")
+                yield self.next_queue[i]
+            except IndexError:
+                logger.debug(f"Unpacker's Next Queue is not long enough")
+                for _ in range(number - len(self.next_queue)):
+                    self.request_next()
+                logger.debug(f"Unpacker's Next Queue is long enough to yield {self.next_queue[i]}")
+                yield self.next_queue[i]
 
 
 rs_dict = {"python9001": Random_Source(function=gen.generate),
@@ -154,9 +170,7 @@ rs_dict = {"python9001": Random_Source(function=gen.generate),
 
 
 if __name__ == "__main__":
-    u = Unpacker(packer_dict["one_I_in_7"], rs_dict["python9001"])
-    for _ in range(8):
-        u.request_next()
-    r = Unpacker(packer_dict["no_rules"], rs_dict["primus"])
-    for _ in range(100):
-        r.request_next()
+    r = Unpacker(packer_dict["no_rules"], rs_dict["randint06"])
+    logger.debug(f"Preview next 7: {tuple(r.preview_next(7))}")
+    logger.debug(f"Spawning: {r.spawn_next()}")
+    logger.debug(f"Preview next 7: {tuple(r.preview_next(7))}")
