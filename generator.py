@@ -134,19 +134,29 @@ class Unpacker():
             result = self.got_bag.popleft()
         self.next_queue.append(result)
         logger.debug(f"Appended {result} to the next_queue: {self.next_queue}")
+    def spawn_next(self):
+        try:
+            result = self.next_queue.popleft()
+            self.request_next()
+        except IndexError:
+            logger.debug("The next_queue seems to be empty. Requesting next piece...")
+            self.request_next()
+            result = self.next_queue.popleft()
+            self.request_next()
+        return result
 
 
-gen_dict = {"python9001": Random_Source(function=gen.generate),
-            "randint06": Random_Source(seed=9001, set_seed=random.seed, function=random.randint, args=(0, 6)),
-            "ones": Random_Source(function=ones.generate),
-            "primus": Random_Source(function=primus.generate),
-            }
+rs_dict = {"python9001": Random_Source(function=gen.generate),
+           "randint06": Random_Source(seed=9001, set_seed=random.seed, function=random.randint, args=(0, 6)),
+           "ones": Random_Source(function=ones.generate),
+           "primus": Random_Source(function=primus.generate),
+           }
 
 
 if __name__ == "__main__":
-    u = Unpacker(packer_dict["one_I_in_7"], gen_dict["python9001"])
+    u = Unpacker(packer_dict["one_I_in_7"], rs_dict["python9001"])
     for _ in range(8):
         u.request_next()
-    r = Unpacker(packer_dict["no_rules"], gen_dict["primus"])
+    r = Unpacker(packer_dict["no_rules"], rs_dict["primus"])
     for _ in range(100):
         r.request_next()

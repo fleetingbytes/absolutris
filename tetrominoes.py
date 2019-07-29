@@ -125,5 +125,14 @@ class Tetromino_Z(Tetromino):
         return super().__call__()
 
 
+mapping = {0: Tetromino_I,
+           1: Tetromino_J,
+           2: Tetromino_L,
+           3: Tetromino_O,
+           4: Tetromino_S,
+           5: Tetromino_T,
+           6: Tetromino_Z}
+
+
 if __name__ == "__main__":
     pass

@@ -267,6 +267,8 @@ class Game():
         logger.debug("Moving it into position")
         text_rect = pygame.Rect(40, 350, text_rect.w, text_rect.h)
         self.list_of_rectangles_to_update.appendr(text_rect)
+        # DEBUG: Before levels are implemented, we need at least an unpacker
+        self.unpacker = generator.Unpacker(generator.packer_dict["no_rules"], generator.rs_dict["randint06"])
         # Main game loop
         while self.pygame_running:
             pygame.display.update(self.list_of_rectangles_to_update)
@@ -302,6 +304,10 @@ class Game():
                         self.pf.draw_tetromino(tetrominoes.Tetromino_T())
                     if event.key == pygame.K_KP7:
                         self.pf.draw_tetromino(tetrominoes.Tetromino_Z())
+                    # Spawn new random tetromino when N is pressed
+                    if event.key == pygame.K_n:
+                        random_number = self.unpacker.spawn_next()
+                        self.pf.draw_tetromino(tetrominoes.mapping[random_number]())
                 if event.type == self.TICK:
                     logger.debug(f"TICK with {self.list_of_rectangles_to_update.added_items} rects to redraw")
                     self.list_of_rectangles_to_update.reset()
