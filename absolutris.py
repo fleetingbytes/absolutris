@@ -164,8 +164,8 @@ class Playfield():
         and blits the tetromino's image into the corresponding playfield's
         coordinates
         """
-        for x, y in tetromino():
-            self.blyt(self.spawn_column + x, self.spawn_row + y + tetromino.spawn_offset, tetromino.img)
+        for mino in tetromino:
+            self.blyt(self.spawn_column + mino.column, self.spawn_row + mino.row + tetromino.spawn_offset, tetromino.img)
 
 
 class Game():

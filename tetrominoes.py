@@ -40,11 +40,13 @@ class Mino():
         elif rotation == 2:
             self.column = -self.left
             self.row = -self.forward
-        elif rotaion == 3:
+        elif rotation == 3:
             self.column = -self.forward
             self.row = self.left
-    def __call__(self):
-        return (self.column, self.row)
+    def __iter__(self):
+        return iter(tuple((self.column, self.row)))
+    def __repr__(self):
+        return f"<Mino(col={self.column}, row={self.row})>"
 
 
 class Tetromino():
@@ -59,70 +61,52 @@ class Tetromino():
         self.current_rotation = 0
         self.rotate(self.current_rotation)
         self.spawn_offset = 0
+    def __iter__(self):
+        return iter(tuple((self.mino_0, self.mino_1, self.mino_2, self.mino_3)))
     def rotate(self, n: int):
-        for mino in (self.mino_0, self.mino_1, self.mino_2, self.mino_3):
+        for mino in self:
             mino.rotate(n)
-    def __call__(self):
-        return (self.mino_0(), self.mino_1(), self.mino_2(), self.mino_3())
+        self.current_rotation = n
 
 
 class Tetromino_I(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, 2), Mino(0, -1))
-    def __call__(self):
-        return super().__call__()
-
 
 class Tetromino_J(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, -1), Mino(1, 1))
         self.spawn_offset = -1
-    def __call__(self):
-        return super().__call__()
-
 
 class Tetromino_L(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, -1), Mino(1, -1))
         self.spawn_offset = -1
-    def __call__(self):
-        return super().__call__()
-
 
 class Tetromino_O(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(-1, 0), Mino(-1, 1))
-    def __call__(self):
-        return super().__call__()
-
 
 class Tetromino_S(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, -1), Mino(-1, 0), Mino(-1, 1))
-    def __call__(self):
-        return super().__call__()
-
 
 class Tetromino_T(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, -1), Mino(1, 0))
         self.spawn_offset = -1
-    def __call__(self):
-        return super().__call__()
 
 
 class Tetromino_Z(Tetromino):
     def __init__(self):
         self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(-1, 0), Mino(-1, -1))
-    def __call__(self):
-        return super().__call__()
 
 
 mapping = {0: Tetromino_I,
