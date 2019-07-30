@@ -15,8 +15,17 @@
 # 
 #   The player can rotate the tetrominoes in 90° steps. Because of 
 
-from pygame import Surface
-from pygame import image
+import logging
+import logging.config
+import logging_conf
+import pygame
+from collections import namedtuple
+
+
+# Setup logging
+logging.config.dictConfig(logging_conf.dict_config)
+logger = logging.getLogger(__name__)
+
 
 class Mino():
     """
@@ -49,6 +58,10 @@ class Mino():
         return f"Mino(col={self.column}, row={self.row})"
 
 
+RGBafactors = namedtuple("RGBafactors", "r_factor, g_factor, b_factor, a_factor")
+Colorization = namedtuple("Colorization", "RGBafactors, intensity")
+
+
 class Tetromino():
     """
     A tetromino is a configuration of four adjacent minoes.
@@ -61,6 +74,15 @@ class Tetromino():
         self.current_rotation = 0
         self.rotate(self.current_rotation)
         self.spawn_offset = 0
+        self.img = pygame.image.load("img/pattern.png")
+        self.color_dict = {"yellow":  Colorization(RGBafactors( 1,  1, -1,  0), 55),
+                           "blue":    Colorization(RGBafactors(-1, -1,  1,  0), 55),
+                           "magenta": Colorization(RGBafactors( 1, -1,  1,  0), 55),
+                           "green":   Colorization(RGBafactors(-1,  1, -1,  0), 55),
+                           "cyan":    Colorization(RGBafactors(-1,  1,  1,  0), 55),
+                           "red":     Colorization(RGBafactors( 1, -1, -1,  0), 55),
+                           "orange":  Colorization(RGBafactors( 1,  0, -1,  0), 55),
+                          }
     def __iter__(self):
         return iter(tuple((self.mino_0, self.mino_1, self.mino_2, self.mino_3)))
     def __repr__(self):
@@ -69,46 +91,68 @@ class Tetromino():
         for mino in self:
             mino.rotate(n)
         self.current_rotation = n
+    def colorize(self, color: str) -> None:
+        factors = self.color_dict[color].RGBafactors
+        intensity = self.color_dict[color].intensity
+        logger.debug(f"Colorizing {type(self).__name__} to {color}, with {factors}, intensity {intensity}")
+        with pygame.PixelArray(self.img) as pxarray:
+            columns, rows = pxarray.shape
+            for row in range(rows):
+                for column in range(columns):
+                    # pxarray has four bytes per pixel representing RGBa in the order of aBGR
+                    # pygame.Color() expects the byte sequence RGBa. so we need to reverse the byte sequence
+                    pixel_int = pxarray[column, row] & 0xffffffff
+                    aRGB = pixel_int.to_bytes(4, byteorder="big")
+                    RGBa = int.from_bytes(aRGB, byteorder="little")
+                    pxcolor = pygame.Color(RGBa)
+                    values = tuple(max(min(255, channel + (intensity * factor)), 0) for channel, factor in zip(pxcolor, factors))
+                    new_color = pygame.Color(*values)
+                    pxarray[column, row] = new_color
 
 
 class Tetromino_I(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, 2), Mino(0, -1))
+        self.colorize("cyan")
+
 
 class Tetromino_J(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, -1), Mino(1, 1))
+        self.colorize("blue")
         self.spawn_offset = -1
+
 
 class Tetromino_L(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, -1), Mino(1, -1))
+        self.colorize("orange")
         self.spawn_offset = -1
+
 
 class Tetromino_O(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(-1, 0), Mino(-1, 1))
+        self.colorize("yellow")
+
 
 class Tetromino_S(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, -1), Mino(-1, 0), Mino(-1, 1))
+        self.colorize("red")
+
 
 class Tetromino_T(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(0, -1), Mino(1, 0))
+        self.colorize("magenta")
         self.spawn_offset = -1
 
 
 class Tetromino_Z(Tetromino):
     def __init__(self):
-        self.img = image.load("img/pattern.png")
         super().__init__(Mino(0, 1), Mino(-1, 0), Mino(-1, -1))
+        self.colorize("green")
 
 
 mapping = {0: Tetromino_I,
