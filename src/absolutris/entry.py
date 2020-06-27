@@ -5,12 +5,12 @@ import logging.config
 import argparse
 
 #Own modules
-from absolutris import config_loader
 from absolutris import logging_conf
+from absolutris import config_loader
 
 
 dir_name = "absolutris"
-ini_name = "absolutris.ini"
+ini_name = "absolutris.config"
 
 
 def provide_user_dir(dir_name: pathlib.Path) -> pathlib.Path:
@@ -56,6 +56,8 @@ def cli_start() -> NoReturn:
     Start from command line
     """
     logger.debug("Program started")
+    with config_loader.Config(path_to_dir / ini_name) as config:
+        pass
     logger.debug("Program ended")
 
 
