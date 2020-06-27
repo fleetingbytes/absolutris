@@ -28,7 +28,7 @@ class Config():
         self.config_parser.optionxform = str
         try:
             self.config_parser.read_file(open(self.path_to_config_file))
-            logger.debug(f"{self.path_to_config_file} read")
+            logger.info(f"{self.path_to_config_file} read")
             self.parse()
         except FileNotFoundError:
             logger.info("config file missing")
@@ -37,7 +37,7 @@ class Config():
         """
         Creates the default config file
         """
-        logger.debug(f"creating {self.path_to_config_file}")
+        logger.info(f"creating {self.path_to_config_file}")
         self.config_parser.add_section("Basics")
         self.config_parser.set("Basics", "# Basic settings.")
         with open(self.path_to_config_file, mode="w", encoding="utf-8") as configfh:

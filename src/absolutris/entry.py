@@ -2,6 +2,7 @@ from typing import NoReturn
 import pathlib
 import logging
 import logging.config
+import sys
 import argparse
 
 #Own modules
@@ -57,7 +58,8 @@ def cli_start() -> NoReturn:
     """
     logger.debug("Program started")
     with config_loader.Config(path_to_dir / ini_name) as config:
-        pass
+        parse_cli_arguments(config)
+        logger.debug(f" Parsed arguments: {config.parsed_args}")
     logger.debug("Program ended")
 
 
