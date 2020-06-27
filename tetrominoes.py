@@ -19,6 +19,7 @@ import logging
 import logging.config
 import logging_conf
 import pygame
+import time
 from collections import namedtuple
 
 
@@ -52,8 +53,6 @@ class Mino():
         elif rotation == 3:
             self.column = -self.forward
             self.row = self.left
-    def __iter__(self):
-        return iter(tuple((self.column, self.row)))
     def __repr__(self):
         return f"Mino(col={self.column}, row={self.row})"
 
@@ -94,7 +93,6 @@ class Tetromino():
     def colorize(self, color: str) -> None:
         factors = self.color_dict[color].RGBafactors
         intensity = self.color_dict[color].intensity
-        logger.debug(f"Colorizing {type(self).__name__} to {color}, with {factors}, intensity {intensity}")
         with pygame.PixelArray(self.img) as pxarray:
             columns, rows = pxarray.shape
             for row in range(rows):
@@ -165,4 +163,7 @@ mapping = {0: Tetromino_I,
 
 
 if __name__ == "__main__":
-    pass
+    time_before = time.time()
+    o = Tetromino_O()
+    time_after = time.time()
+    logger.debug(f"spawn time: {time_after - time_before}")
