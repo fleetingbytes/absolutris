@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Logger Configuration module
 # Import this for easy logger configuration
 # See example in the comment of the set_logfile_path function below
