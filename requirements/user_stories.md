@@ -16,8 +16,8 @@
 * The user shall be able to choose between relative and absolute mode of control.
 
 ##### Relative mode of control
-* In relative control mode the tetromino can be moved to the adjacent left or adjacent right column
-* In relative control mode the tetromino can be rotated 90 degrees clockwise or 90 degrees counter-clockwise
+* In relative control mode the tetromino shall be mobed gradually either to the adjacent left or adjacent right column.
+* In relative control mode the tetromino shall be rotated gradually 90 degrees clockwise or 90 degrees counter-clockwise.
 
 ##### Absolute mode of control
 * In absolute control mode the tetromino can be moved directly to any available column.

@@ -13,7 +13,10 @@ class Pygen:
         return self.seeded_random.randint(0, 6)
 
 
+pygen9001 = Pygen(9001)
+pop = pygen9001.__next__
+
+
 if __name__ == "__main__":
-    pygen9001 = Pygen(9001)
     for _ in range(10):
         print(next(pygen9001))
