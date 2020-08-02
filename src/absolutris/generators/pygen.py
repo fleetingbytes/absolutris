@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 import random
-from typing import NoReturn
 
 
 class Pygen:
     """
     Generates random numbers using the python random module
     """
-    def __init__(self, seed=None) -> NoReturn:
+    def __init__(self, seed=None) -> None:
         self.seeded_random = random.Random(seed)
     def __next__(self) -> int:
         return self.seeded_random.randint(0, 6)

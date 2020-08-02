@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
-from typing import NoReturn
 import pathlib
 import logging
 import logging.config
 import sys
 import argparse
+import time
 
 #Own modules
 from absolutris import logging_conf
 from absolutris import config_loader
+# from absolutris import generators
 
 
 dir_name = "absolutris"
@@ -44,24 +45,31 @@ finally:
 
 
 # Parse CLI arguments
-def parse_cli_arguments(config) -> NoReturn:
+def parse_cli_arguments() -> argparse.Namespace:
     """
     Parse command line arguments and add them to config object
     """
     parser = argparse.ArgumentParser(description="Absolutris: My kind of tetris")
-    parser.add_argument("-t", "--text", action="store_true")
+    parser.add_argument("-g", "--gui", action="store_true")
     parser.add_argument("-s", "--stats", action="store_true")
-    config.parsed_args = parser.parse_args(sys.argv[1:])
+    parser.add_argument("-v", "--verbose", action="store_true")
+    return parser.parse_args(sys.argv[1:])
 
 
-def cli_start() -> NoReturn:
+def cli_start() -> None:
     """
     Start from command line
     """
     logger.debug("Program started")
     with config_loader.Config(path_to_dir / ini_name) as config:
-        parse_cli_arguments(config)
-        logger.debug(f" Parsed arguments: {config.parsed_args}")
+        config.cli = parse_cli_arguments()
+        logger.debug(f" Parsed arguments: {config.cli}")
+    # logger.info(f"Buffering random numbers")
+    # time.sleep(15)
+    # Setup Playfield
+    if config.cli.gui:
+        from absolutris import gui
+        gui.run(config)
     logger.debug("Program ended")
 
 

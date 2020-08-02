@@ -3,7 +3,6 @@
 import pathlib
 import configparser
 import logging
-from typing import NoReturn
 
 # setup logging
 logger = logging.getLogger(__name__)
@@ -13,7 +12,7 @@ class Config():
     """
     Holds all confituration data readily available as attributes
     """
-    def __init__(self, cfg_path: pathlib.Path) -> NoReturn:
+    def __init__(self, cfg_path: pathlib.Path) -> None:
         self.path_to_config_file = cfg_path
         self.read_config_file()
     def __enter__(self):
@@ -35,17 +34,22 @@ class Config():
         except FileNotFoundError:
             logger.info("config file missing")
             self.create_config_file()
-    def create_config_file(self) -> NoReturn:
+    def create_config_file(self) -> None:
         """
         Creates the default config file
         """
         logger.info(f"creating {self.path_to_config_file}")
-        self.config_parser.add_section("Basics")
-        self.config_parser.set("Basics", "# Basic settings.")
+        self.config_parser.add_section("Playfield")
+        self.config_parser.set("Playfield", "# Playfield settings.")
+        self.config_parser.set("Playfield", "width", "10")
+        self.config_parser.set("Playfield", "height", "20")
+        self.config_parser.add_section("Game")
+        self.config_parser.set("Game", "Game settings" "# Game settings.")
+        self.config_parser.set("Game", "foo" "foo")
         with open(self.path_to_config_file, mode="w", encoding="utf-8") as configfh:
             self.config_parser.write(configfh)
         self.read_config_file()
-    def delete_config_file(self) -> NoReturn:
+    def delete_config_file(self) -> None:
         """
         Serves debugging purposes. Deletes the config file.
         """
@@ -54,11 +58,12 @@ class Config():
             logger.debug(f"{self.path_to_config_file} deleted")
         except FileNotFoundError as exc:
             logger.exception(f"Could not delete {self.path_to_config_file}")
-    def parse(self) -> NoReturn:
+    def parse(self) -> None:
         """
         Parses the configuration files into usable attributes
         """
-        pass
+        self.width = self.config_parser.getint("Playfield", "width")
+        self.height = self.config_parser.getint("Playfield", "height")
 
 
 if __name__ == "__main__":
