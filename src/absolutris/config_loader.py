@@ -43,9 +43,15 @@ class Config():
         self.config_parser.set("Playfield", "# Playfield settings.")
         self.config_parser.set("Playfield", "width", "10")
         self.config_parser.set("Playfield", "height", "20")
-        self.config_parser.add_section("Game")
-        self.config_parser.set("Game", "Game settings" "# Game settings.")
-        self.config_parser.set("Game", "foo" "foo")
+        self.config_parser.add_section("Game window")
+        self.config_parser.set("Game window", "# Pygame game window settings.")
+        self.config_parser.set("Game window", "title", "Absolutris")
+        self.config_parser.set("Game window", "# Initial game window position")
+        self.config_parser.set("Game window", "initial_x_pos", "100")
+        self.config_parser.set("Game window", "initial_y_pos", "100")
+        self.config_parser.set("Game window", "# Game window dimensions")
+        self.config_parser.set("Game window", "width", "800")
+        self.config_parser.set("Game window", "height", "600")
         with open(self.path_to_config_file, mode="w", encoding="utf-8") as configfh:
             self.config_parser.write(configfh)
         self.read_config_file()
@@ -62,8 +68,13 @@ class Config():
         """
         Parses the configuration files into usable attributes
         """
-        self.width = self.config_parser.getint("Playfield", "width")
-        self.height = self.config_parser.getint("Playfield", "height")
+        self.playfield_width = self.config_parser.getint("Playfield", "width")
+        self.playfield_height = self.config_parser.getint("Playfield", "height")
+        self.game_window_title = self.config_parser.get("Game window", "title")
+        self.game_window_x_pos = self.config_parser.getint("Game window", "initial_x_pos")
+        self.game_window_y_pos = self.config_parser.getint("Game window", "initial_y_pos")
+        self.game_window_width = self.config_parser.getint("Game window", "width")
+        self.game_window_height = self.config_parser.getint("Game window", "height")
 
 
 if __name__ == "__main__":
