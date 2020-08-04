@@ -33,15 +33,20 @@ def provide_user_dir(dir_name: pathlib.Path) -> pathlib.Path:
 
 
 # Setup logging
-try:
-    path_to_dir = provide_user_dir(dir_name)
-    logger_config = logging_conf.create_dict_config(path_to_dir, "debug.log", "errors.log")
-except FileExistsError:
-    logger.error(f"Failed to create the directory `{str(path_to_dir)}` because it already exists as a file.")
-    logger.info(f"Please create the directory `{str(path_to_dir)}`")
-finally:
-    logging.config.dictConfig(logger_config)
-    logger = logging.getLogger("custom_logger")
+def setup_logging_directory(dir_name):
+    """
+    Returns a logger.
+    """
+    try:
+        path_to_dir = provide_user_dir(dir_name)
+        logger_config = logging_conf.create_dict_config(path_to_dir, "debug.log", "errors.log")
+    except FileExistsError:
+        logger.error(f"Failed to create the directory `{str(path_to_dir)}` because it already exists as a file.")
+        logger.info(f"Please create the directory `{str(path_to_dir)}`")
+    finally:
+        logging.config.dictConfig(logger_config)
+        logger = logging.getLogger("custom_logger")
+    return logger, path_to_dir
 
 
 # Parse CLI arguments
@@ -60,6 +65,7 @@ def cli_start() -> None:
     """
     Start from command line
     """
+    logger, path_to_dir = setup_logging_directory(dir_name)
     logger.debug("Program started")
     with config_loader.Config(path_to_dir / ini_name) as config:
         config.cli = parse_cli_arguments()
@@ -68,8 +74,11 @@ def cli_start() -> None:
     # time.sleep(15)
     # Setup Playfield
     if config.cli.gui:
-        from absolutris import gui
-        gui.run(config)
+        from absolutris import game
+        try:
+            game.run(config)
+        except Exception as err:
+            logger.exception(f"Uncaught exception {repr(err)} occurred.")
     logger.debug("Program ended")
 
 
