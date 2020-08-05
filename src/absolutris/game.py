@@ -25,7 +25,7 @@ class Game:
         pygame.display.set_caption(self.config.game_window_title)
         self.game_window = pygame.display.set_mode(
                 size=(self.config.game_window_width, self.config.game_window_height), 
-                flags=pygame.NOFRAME
+                # flags=pygame.NOFRAME
             )
         self.game_window.fill(self.config.colors_window_bg)
     def run_game(self) -> None:
