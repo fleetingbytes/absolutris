@@ -27,6 +27,7 @@ class Game:
                 size=(self.config.game_window_width, self.config.game_window_height), 
                 flags=pygame.NOFRAME
             )
+        self.game_window.fill(self.config.colors_window_bg)
     def run_game(self) -> None:
         logger.debug("Running game")
         pygame.init()
