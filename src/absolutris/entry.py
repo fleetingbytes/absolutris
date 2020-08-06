@@ -55,7 +55,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     Parse command line arguments and add them to config object
     """
     parser = argparse.ArgumentParser(description="Absolutris: My kind of tetris")
-    parser.add_argument("-g", "--gui", action="store_true")
+    parser.add_argument("-g", "--gui", type=str, help="define which GUI to use")
     parser.add_argument("-s", "--stats", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true")
     return parser.parse_args(sys.argv[1:])
@@ -79,6 +79,8 @@ def cli_start() -> None:
             game.run(config)
         except Exception as err:
             logger.exception(f"Uncaught exception {repr(err)} occurred.")
+    else:
+        logger.debug("Running without GUI")
     logger.debug("Program ended")
 
 

@@ -19,6 +19,13 @@ class Game:
     """
     def __init__(self, config: config_loader.Config) -> None:
         self.config = config
+        if self.config.cli.gui == "default":
+            logger.debug("using default gui")
+            from absolutris.gui import default as gui
+        elif self.config.cli.gui == "debug":
+            logger.debug("using DEBUG gui")
+            from absolutris.gui import debug as gui
+        self.gui = gui
     def setup_game_window(self) -> None:
         # Set initial game window position
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.config.game_window_x_pos},{self.config.game_window_y_pos}"

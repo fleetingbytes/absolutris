@@ -1,35 +1,18 @@
 #!/usr/bin/env python
 
-import logging
-import pygame
-
-
-# setup logging
-logger = logging.getLogger(__name__)
-
-
-"""
-GUI specification for Absolutris
-"""
-
-
-range_playfield_width(7, 14)
-
 
 class Gui:
     """
-    Base GUI class. Any GUI must define its own class derived from this one.
+    Class for GUIs of Absolutris.
     """
-    def __init_subclass__(cls, /, flags, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-        logger.error("Hook for checks is here")
-        cls.flags = flags
-
-
-class Debug(Gui, flags=pygame.NOFRAME):
-    def __init__(self, playfield_width):
+    def __init__(self, flags=0, playfield_width=10):
+        self.flags = flags
         self.playfield_width = playfield_width
 
 
+default = Gui()
+debug = Gui(flags=32, playfield_width=11)
+
+
 if __name__ == "__main__":
-    d = Debug()
+    pass
