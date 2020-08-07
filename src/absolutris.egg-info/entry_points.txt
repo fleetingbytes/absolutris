@@ -1,3 +1,0 @@
-[console_scripts]
-absolutris = absolutris.__main__:main
-
