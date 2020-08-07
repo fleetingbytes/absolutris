@@ -70,9 +70,6 @@ def cli_start() -> None:
     with config_loader.Config(path_to_dir / ini_name) as config:
         config.cli = parse_cli_arguments()
         logger.debug(f" Parsed arguments: {config.cli}")
-    # logger.info(f"Buffering random numbers")
-    # time.sleep(15)
-    # Setup Playfield
     if config.cli.gui:
         from absolutris import game
         try:

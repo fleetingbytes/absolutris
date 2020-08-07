@@ -10,8 +10,16 @@ class Gui:
         self.playfield_width = playfield_width
 
 
+class Malicious(Gui):
+    def __init__(self):
+        pass
+
+
 default = Gui()
 debug = Gui(flags=32, playfield_width=11)
+debug.flags="asdf"
+
+m = Malicious()
 
 
 if __name__ == "__main__":

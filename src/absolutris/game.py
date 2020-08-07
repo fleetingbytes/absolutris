@@ -43,14 +43,19 @@ class Game:
         logger.info(f"Running main game loop")
         while self.pygame_running:
             for event in pygame.event.get():
+                # React to quitting pygame, e.g. by closing the game window
                 if event.type == pygame.QUIT:
+                    logger.debug("User closed pygame window")
                     self.pygame_running = False
                     break
+                # React to keypresses:
                 if event.type == pygame.KEYDOWN:
-                    # Close main window if Ctrl-Q is pressed
                     if event.key == pygame.K_q:
+                        # distinguish between Q and Ctrl-Q
                         mods = pygame.key.get_mods()
+                        # End main loop if Ctrl-Q was pressed
                         if mods & pygame.KMOD_CTRL:
+                            logger.debug("User pressed Ctrl-Q to quit the game.")
                             self.pygame_running = False
                             break
         logger.info(f"Finished main game loop")
@@ -66,5 +71,5 @@ def run(config: config_loader.Config) -> None:
 
 
 if __name__ == "__main__":
-    logger.debug(f"GUI started")
-    logger.debug(f"GUI ended")
+    logger.debug(f"GUI started from __main__")
+    logger.debug(f"GUI ended from __main__")
