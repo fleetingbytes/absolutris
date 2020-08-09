@@ -10,7 +10,7 @@ class Gui:
     Class for GUIs of Absolutris.
     """
     game_window_x_pos: int = 24
-    game_window_y_pos: int = 24
+    game_window_y_pos: int = 36
     game_window_title: str = "Absolutris"
     game_window_width: int = 1920-24*2
     game_window_height: int = 1080-24*4
