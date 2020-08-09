@@ -40,24 +40,8 @@ class Config():
         Creates the default config file
         """
         logger.info(f"creating {self.path_to_config_file}")
-        self.config_parser.add_section("Playfield")
-        self.config_parser.set("Playfield", "# Playfield settings.")
-        self.config_parser.set("Playfield", "width", "10")
-        self.config_parser.set("Playfield", "height", "20")
-        self.config_parser.add_section("Game window")
-        self.config_parser.set("Game window", "# Pygame game window settings.")
-        self.config_parser.set("Game window", "title", "Absolutris")
-        self.config_parser.set("Game window", "# Initial game window position")
-        self.config_parser.set("Game window", "initial_x_pos", "10")
-        self.config_parser.set("Game window", "initial_y_pos", "10")
-        self.config_parser.set("Game window", "# Game window dimensions")
-        self.config_parser.set("Game window", "width", "1900")
-        self.config_parser.set("Game window", "height", "1060")
-        self.config_parser.add_section("Colors")
-        self.config_parser.set("Colors", "# Color values need to be separated by comma and space \", \"")
-        self.config_parser.set("Colors", "game_window_background_color", "18, 18, 18, 255")
-        self.config_parser.set("Colors", "game_window_foreground_color", "245, 245, 245, 255")
-        self.config_parser.set("Colors", "font_color", "70, 70, 70, 255")
+        self.config_parser.add_section("GUI")
+        self.config_parser.set("GUI", "# GUI settings are not necessary here")
         with open(self.path_to_config_file, mode="w", encoding="utf-8") as configfh:
             self.config_parser.write(configfh)
         self.read_config_file()
@@ -79,16 +63,7 @@ class Config():
         """
         Parses the configuration files into usable attributes
         """
-        self.playfield_width = self.config_parser.getint("Playfield", "width")
-        self.playfield_height = self.config_parser.getint("Playfield", "height")
-        self.game_window_title = self.config_parser.get("Game window", "title")
-        self.game_window_x_pos = self.config_parser.getint("Game window", "initial_x_pos")
-        self.game_window_y_pos = self.config_parser.getint("Game window", "initial_y_pos")
-        self.game_window_width = self.config_parser.getint("Game window", "width")
-        self.game_window_height = self.config_parser.getint("Game window", "height")
-        self.colors_window_bg = self.get_color("Colors", "game_window_background_color")
-        self.colors_window_fg = self.get_color("Colors", "game_window_foreground_color")
-        self.colors_window_font_color= self.get_color("Colors", "font_color")
+        pass
 
 
 if __name__ == "__main__":

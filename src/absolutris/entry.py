@@ -10,6 +10,7 @@ import time
 #Own modules
 from absolutris import logging_conf
 from absolutris import config_loader
+from absolutris import game
 # from absolutris import generators
 
 
@@ -70,14 +71,10 @@ def cli_start() -> None:
     with config_loader.Config(path_to_dir / ini_name) as config:
         config.cli = parse_cli_arguments()
         logger.debug(f" Parsed arguments: {config.cli}")
-    if config.cli.gui:
-        from absolutris import game
-        try:
-            game.run(config)
-        except Exception as err:
-            logger.exception(f"Uncaught exception {repr(err)} occurred.")
-    else:
-        logger.debug("Running without GUI")
+    try:
+        game.run(config)
+    except Exception as err:
+        logger.exception(f"Uncaught exception {repr(err)} occurred.")
     logger.debug("Program ended")
 
 

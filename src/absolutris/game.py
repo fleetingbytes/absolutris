@@ -28,19 +28,19 @@ class Game:
         self.gui = gui
     def setup_game_window(self) -> None:
         # Set initial game window position
-        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.config.game_window_x_pos},{self.config.game_window_y_pos}"
-        pygame.display.set_caption(self.config.game_window_title)
+        os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.gui.game_window_x_pos},{self.gui.game_window_y_pos}"
+        pygame.display.set_caption(self.gui.game_window_title)
         self.game_window = pygame.display.set_mode(
-                size=(self.config.game_window_width, self.config.game_window_height), 
-                # flags=pygame.NOFRAME
+                size=(self.gui.game_window_width, self.gui.game_window_height), 
+                flags=self.gui.flags
             )
-        self.game_window.fill(self.config.colors_window_bg)
-    def run_game(self) -> None:
-        logger.debug("Running game")
+        self.game_window.fill(self.gui.colors_window_bg)
+    def run_gui(self) -> None:
+        logger.debug(f"Running game with {self.config.cli.gui} gui")
         pygame.init()
         self.setup_game_window()
         self.pygame_running = True
-        logger.info(f"Running main game loop")
+        logger.info(f"Entering main game loop")
         while self.pygame_running:
             for event in pygame.event.get():
                 # React to quitting pygame, e.g. by closing the game window
@@ -55,19 +55,22 @@ class Game:
                         mods = pygame.key.get_mods()
                         # End main loop if Ctrl-Q was pressed
                         if mods & pygame.KMOD_CTRL:
-                            logger.debug("User pressed Ctrl-Q to quit the game.")
+                            logger.debug("User pressed Ctrl-Q to quit the game")
                             self.pygame_running = False
                             break
-        logger.info(f"Finished main game loop")
+        logger.info(f"Leaving main game loop")
         pygame.quit()
+    def run_game(self):
+        if self.config.cli.gui:
+            self.run_gui()
+        else:
+            logger.debug("Runing game with no gui")
         logger.debug("Finished running game")
 
 
 def run(config: config_loader.Config) -> None:
-    logger.debug(f"Running GUI")
     game = Game(config)
     game.run_game()
-    logger.debug(f"Ending GUI")
 
 
 if __name__ == "__main__":

@@ -1,13 +1,29 @@
 #!/usr/bin/env python
 
+import dataclasses
+import pygame
 
+
+@dataclasses.dataclass
 class Gui:
     """
     Class for GUIs of Absolutris.
     """
-    def __init__(self, flags=0, playfield_width=10):
-        self.flags = flags
-        self.playfield_width = playfield_width
+    game_window_x_pos: int = 24
+    game_window_y_pos: int = 24
+    game_window_title: str = "Absolutris"
+    game_window_width: int = 1920-24*2
+    game_window_height: int = 1080-24*4
+    flags: int = 0
+    colors_window_bg: pygame.Color = pygame.Color(18, 18, 18, 255)
+    colors_window_fg: pygame.Color = pygame.Color(245, 245, 245, 255)
+    colors_font_fg: pygame.Color = pygame.Color(70, 70, 70, 255)
+    playfield_width: int = 10
+    playfield_height: int = 20
+    pixel_width = 3
+    pixel_height = 3
+    mino_width = 8
+    mino_height = 8
 
 
 class Malicious(Gui):
@@ -16,8 +32,7 @@ class Malicious(Gui):
 
 
 default = Gui()
-debug = Gui(flags=32, playfield_width=11)
-debug.flags="asdf"
+debug = Gui(flags=32)
 
 m = Malicious()
 

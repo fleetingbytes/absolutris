@@ -4,13 +4,26 @@ class Error(Exception):
     """
     Base class for Exceptions in this module.
     """
-    pass
+    def __init__(self, message) -> None:
+        self.message = message
 
 
 class TestError(Error):
     """
     Raised only for test purposes.
     """
-    def __init__(self, message) -> None:
-        self.message = message
+    pass
 
+
+class UnsignedIntegerOverflow(Error):
+    """
+    Raised when trying to convert an python int to an unsigned integer of a limited bit length and this integer is too big.
+    """
+    pass
+
+
+class UnsignedIntegerBitLength(Error):
+    """
+    Raised when trying to convert an integer to a bitlength < 1.
+    """
+    pass
