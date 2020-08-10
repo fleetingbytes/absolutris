@@ -80,5 +80,9 @@ def in_bitfield(integer: int, bitfield: int) -> bool:
     return (integer | bitfield) == bitfield
 
 
+def pygame_wrapper(coro):
+    yield from coro
+
+
 if __name__ == "__main__":
     pass

@@ -5,6 +5,7 @@ import os
 import logging
 # Necessary for Typing
 from absolutris import config_loader
+from typing import Coroutine
 # Own modules
 from absolutris import errors
 
@@ -26,7 +27,7 @@ class Game:
             logger.debug("using DEBUG gui")
             from absolutris.gui import debug as gui
         elif self.config.cli.gui == "m":
-            logger.debug("using DEBUG gui")
+            logger.debug("using malicious gui")
             from absolutris.gui import m as gui
         else:
             raise errors.GuiNotImplemented(f"Cannot find any instance of \"{self.config.cli.gui}\" in gui.py")
@@ -40,13 +41,16 @@ class Game:
                 flags=self.gui.flags
             )
         self.game_window.fill(self.gui.colors_window_bg)
-    def run_gui(self) -> None:
+    def run_gui(self, testing: bool=False) -> None:
         logger.debug(f"Running game with {self.config.cli.gui} gui")
         pygame.init()
         self.setup_game_window()
         self.pygame_running = True
         logger.info(f"Entering main game loop")
         while self.pygame_running:
+            # if testing:
+                # test_input = (yield)
+                # pygame.event.post(test_input)
             for event in pygame.event.get():
                 # React to quitting pygame, e.g. by closing the game window
                 if event.type == pygame.QUIT:

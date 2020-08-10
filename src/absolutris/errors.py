@@ -34,3 +34,5 @@ class GuiNotImplemented(Error):
     Raised when trying to load a gui which is not instantiated in gui.py.
     """
     pass
+
+
