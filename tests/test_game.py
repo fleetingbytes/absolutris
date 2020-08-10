@@ -1,13 +1,9 @@
 #!/usr/bin/env python
 
 import pytest
-from absolutris import config_loader
-from absolutris import entry
 from absolutris import game
 from absolutris import errors
-
-
-config_dir = entry.provide_user_dir(entry.dir_name)
+from absolutris import testhelper
 
 
 def test_raise_GuiNotImplemented() -> None:
@@ -16,9 +12,22 @@ def test_raise_GuiNotImplemented() -> None:
     $ absolutris -g missing_gui
     """
     with pytest.raises(errors.GuiNotImplemented):
-        with config_loader.Config(config_dir / entry.ini_name) as config:
-            pass
-        class Cli:
-            gui = "not_instantiated"
-        config.cli = Cli()
-        game_test = game.Game(config)
+        testhelper.config.cli = testhelper.Cli(gui="not_instantiated")
+        game_test = game.Game(testhelper.config)
+
+
+def test_game_gui_init() -> None:
+    """
+    Tests if a game session can be initialized with any gui
+    """
+    for gi_name, gi in testhelper.find_gui_instances():
+        testhelper.config.cli = testhelper.Cli(gui=gi_name)
+        assert game.Game(testhelper.config)
+
+
+def test_no_gui_game() -> None:
+    """
+    Tests if a game session can be instantiated without gui
+    """
+    testhelper.config.cli = testhelper.Cli(gui=None)
+    assert game.run(testhelper.config) is None

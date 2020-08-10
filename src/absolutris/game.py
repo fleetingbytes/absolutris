@@ -63,19 +63,19 @@ class Game:
                             logger.debug("User pressed Ctrl-Q to quit the game")
                             self.pygame_running = False
                             break
-        logger.info(f"Leaving main game loop")
+        logger.info(f"Left main game loop")
         pygame.quit()
-    def run_game(self):
-        if self.config.cli.gui:
-            self.run_gui()
-        else:
-            logger.debug("Runing game with no gui")
-        logger.debug("Finished running game")
+        logger.debug("Finished running game with {self.config.cli.gui} gui")
 
 
 def run(config: config_loader.Config) -> None:
-    game = Game(config)
-    game.run_game()
+    if config.cli.gui is not None:
+        game = Game(config)
+        game.run_gui()
+    else:
+        logger.debug("Runing game with no gui")
+        logger.debug("Finished runing game with no gui")
+
 
 
 if __name__ == "__main__":

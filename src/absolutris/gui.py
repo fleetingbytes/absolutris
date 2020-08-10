@@ -27,7 +27,9 @@ class Gui:
 
 
 class Malicious(Gui):
-    pass
+    """
+    Gui can be subsclassed
+    """
 
 
 default = Gui()
