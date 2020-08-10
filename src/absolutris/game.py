@@ -25,6 +25,11 @@ class Game:
         elif self.config.cli.gui == "debug":
             logger.debug("using DEBUG gui")
             from absolutris.gui import debug as gui
+        elif self.config.cli.gui == "m":
+            logger.debug("using DEBUG gui")
+            from absolutris.gui import m as gui
+        else:
+            raise errors.GuiNotImplemented(f"Cannot find any instance of \"{self.config.cli.gui}\" in gui.py")
         self.gui = gui
     def setup_game_window(self) -> None:
         # Set initial game window position

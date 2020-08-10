@@ -27,3 +27,10 @@ class UnsignedIntegerBitLength(Error):
     Raised when trying to convert an integer to a bitlength < 1.
     """
     pass
+
+
+class GuiNotImplemented(Error):
+    """
+    Raised when trying to load a gui which is not instantiated in gui.py.
+    """
+    pass
