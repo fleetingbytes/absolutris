@@ -18,8 +18,17 @@ def provide_dir(dir_name: pathlib.Path) -> pathlib.Path:
         pass
         # logger.debug(f"Found {str(directory)}")
     else:
-        directory.mkdir()
-        # logger.info(f"Created {str(directory)}")
+        while True:
+            try:
+                directory.mkdir()
+                # logger.info(f"Created {str(directory)}")
+                break
+            except FileNotFoundError:
+                provide_dir(directory.parent)
+                provide_dir(directory)
+            except FileExistsError:
+                logger.debug(f"{directory} already exists")
+                break
     return directory
 
 
