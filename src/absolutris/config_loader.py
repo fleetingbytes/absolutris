@@ -15,6 +15,7 @@ class Config():
     """
     def __init__(self, cfg_path: pathlib.Path) -> None:
         self.path_to_config_file = cfg_path
+        self.path_to_home = self.path_to_config_file.parent
         self.read_config_file()
     def __enter__(self):
         return self

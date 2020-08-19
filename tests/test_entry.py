@@ -2,14 +2,11 @@
 
 import pathlib
 from absolutris import entry
+from absolutris import utils
 from absolutris import config_loader
 
 
-def test_entry_provide_user_dir():
-    assert entry.provide_user_dir(pathlib.Path(entry.dir_name)).is_dir()
-
-
-cfg_path = entry.provide_user_dir(pathlib.Path(entry.dir_name)) / entry.ini_name
+cfg_path = utils.provide_dir(pathlib.Path(entry.dir_name)) / entry.ini_name
 
 
 def test_config_file_creation():

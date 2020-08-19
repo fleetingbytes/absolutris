@@ -8,6 +8,7 @@ from absolutris import config_loader
 from typing import Coroutine
 # Own modules
 from absolutris import errors
+from absolutris.generators import pregen
 
 
 # setup logging
@@ -73,7 +74,10 @@ class Game:
 
 
 def run(config: config_loader.Config) -> None:
-    if config.cli.gui is not None:
+    if config.cli.download:
+        logger.debug("Downloading random bits")
+        pregen.download_bytes(config)
+    elif config.cli.gui is not None:
         game = Game(config)
         game.run_gui()
     else:

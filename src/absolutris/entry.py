@@ -8,6 +8,7 @@ import argparse
 import time
 
 #Own modules
+from absolutris import utils
 from absolutris import logging_conf
 from absolutris import config_loader
 from absolutris import game
@@ -18,28 +19,13 @@ dir_name = "absolutris"
 ini_name = "absolutris.config"
 
 
-def provide_user_dir(dir_name: pathlib.Path) -> pathlib.Path:
-    """
-    Checks if there is a directory of name `dir_name` in the user home path.
-    If not, it will try to create one. 
-    """
-    directory = pathlib.Path.home() / dir_name
-    if directory.exists() and directory.is_dir():
-        pass
-        # logger.debug(f"Found {str(directory)}")
-    else:
-        directory.mkdir()
-        # logger.info(f"Created {str(directory)}")
-    return directory
-
-
 # Setup logging
 def setup_logging_directory(dir_name):
     """
     Returns a logger.
     """
     try:
-        path_to_dir = provide_user_dir(dir_name)
+        path_to_dir = utils.provide_dir(dir_name)
         logger_config = logging_conf.create_dict_config(path_to_dir, "debug.log", "errors.log")
     except FileExistsError:
         logger.error(f"Failed to create the directory `{str(path_to_dir)}` because it already exists as a file.")
@@ -59,6 +45,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("-g", "--gui", type=str, help="define which GUI to use")
     parser.add_argument("-s", "--stats", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("-d", "--download", action="store_true", help="download random bytes from random.org")
     return parser.parse_args(sys.argv[1:])
 
 

@@ -5,6 +5,7 @@ This module defines functions and classes which are shared across mutliple pytes
 """
 
 
+from absolutris import utils
 from absolutris import entry
 from absolutris import gui
 from absolutris import config_loader
@@ -13,7 +14,7 @@ from typing import Type
 from typing import Union
 
 
-config_dir = entry.provide_user_dir(entry.dir_name)
+config_dir = utils.provide_dir(entry.dir_name)
 
 
 # instantiate a configuration:
@@ -25,7 +26,8 @@ class Cli:
     """
     Class simulating parsed command line arguments.
     """
-    def __init__(self, gui: Union[None, str]="default", verbose: bool=False, stats: bool=False):
+    def __init__(self, download: bool=False, gui: Union[None, str]="default", verbose: bool=False, stats: bool=False):
+        self.download = download
         self.gui = gui
         self.verbose = verbose
         self.stats = stats

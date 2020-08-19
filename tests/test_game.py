@@ -47,5 +47,5 @@ def test_no_gui_game() -> None:
     """
     Tests if a game can be run without gui
     """
-    testhelper.config.cli = testhelper.Cli(gui=None)
+    testhelper.config.cli = testhelper.Cli(download=False, gui=None, stats=False, verbose=False)
     assert game.run(testhelper.config) is None
