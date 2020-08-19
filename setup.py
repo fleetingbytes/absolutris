@@ -52,7 +52,7 @@ setup(
             project_name: []
             },
         python_requires=">=3.8",
-        install_requires=["pygame", "pandas", "rdoclient"],
+        install_requires=["pygame", "pandas", "rdoclient", "requests"],
         entry_points={
             "console_scripts": ["absolutris = absolutris.__main__:main"],
             },
