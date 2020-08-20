@@ -35,4 +35,11 @@ class GuiNotImplemented(Error):
     """
     pass
 
-
+class DepletedRandomSource(Error):
+    """
+    Raised when a generator is not capable of generating any more random numbers.
+    """
+    def __init__(self, file_name: str, bits_used: int):
+        self.file_name = file_name
+        self.bits_used = bits_used
+        self.message = f"Used all random numbers in {self.file_name}"
