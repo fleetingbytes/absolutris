@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+
+"""
+  _____   ______ _______  ______ _______ __   _
+ |_____] |_____/ |______ |  ____ |______ | \  |
+ |       |    \_ |______ |_____| |______ |  \_|
+
+Uses pregenerated random binary from archive.random.org
+to create truly random tetrominoes.
+"""
+
+
 from __future__ import annotations
 
 import pathlib
@@ -10,7 +21,6 @@ import io
 import logging
 from contextlib import contextmanager
 from collections import deque
-from absolutris import config_loader
 from absolutris import utils
 from absolutris import errors
 
@@ -23,6 +33,117 @@ BITS_IN_BYTE = 8
 MINO_BIT_LENGTH = 3
 IGNORED_BIT_SEQUENCE = 0b111
 RANDOM_FILE_BIT_LENGTH = 0x800000
+
+
+class Random_File_Handler:
+    """
+    Reads from a random bytes file.
+    Creates a corresponding .pos file which tracks how many bits
+    from the random bytes file have already been read
+    """
+    def __init__(self, file_path: pathlib.Path, buffer_lenght: int=50) -> None:
+        self.random_file = file_path
+        self.buffer_length = 50
+        self.refill_limit = self.buffer_length // 2
+        self.buffer = deque(tuple(None for _ in range(self.buffer_length)), maxlen=self.buffer_length)
+        self.fill_buffer(self.buffer_length)
+    @contextmanager
+    def init_file(self, file_path: pathlib.Path) -> tuple[io.BufferedReader, io.BufferedRandom, int]:
+        file = open(file_path, mode="rb")
+        pos_file_path = file_path.with_suffix(".pos")
+        pos_file_path.touch(mode=0o666, exist_ok=True)
+        with open(pos_file_path, mode="r+b") as pf:
+            bits_used = int.from_bytes(pf.read(), byteorder="big", signed=False)
+        pos_file = open(pos_file_path, mode="r+b")
+        file.seek(bits_used // BITS_IN_BYTE)
+        try:
+            yield (file, pos_file, bits_used)
+        finally:
+            file.close()
+            logger.debug(f"{file.name} closed.")
+            pos_file.close()
+            logger.debug(f"{pos_file.name} closed.")
+    def write_position(self, pos_file: io.BufferedRandom, bits_used: int) -> None:
+        pos_file.write(bits_used.to_bytes(length=RANDOM_FILE_BIT_LENGTH.bit_length() // BITS_IN_BYTE, byteorder="big", signed=False))
+        pos_file.seek(0)
+        logger.debug(f"{bits_used = } written to {pos_file.name}")
+    def get_mino(self, file: io.BufferedReader, bits_used: int=0) -> tuple[int, int]:
+        """
+        Reads from `file` unused bits until they can be mapped to mino.
+        `file` is a filehandle for reading bytes from a file containing pregenerated random bytes.
+        `bits_used` is the number of bits which were already read from the beginning of the file
+            should be skipped before reading any further bits.
+        Returns the tuple(mino, bits_used)
+            where `mino` is a single base 7 integer,
+            and `bits_used` is an updated value of bits used.
+        The file can only be read byte by byte. Bits from the bytes are used from the MSB to LSB.
+        If the byte has less bits left than is necessary to compute a mino, an additional byte is
+        read, (`n_bytes_to_read`).
+        The used bits are masked away and ignored (see the formula for `int_from_byts`).
+        """ 
+        # This loop will repeat until potential_mino will be other than IGNORED_BIT_SEQUENCE (7)
+        potential_mino = IGNORED_BIT_SEQUENCE
+        while potential_mino == IGNORED_BIT_SEQUENCE:
+            bits_used_in_bytes = bits_used % BITS_IN_BYTE
+            logger.debug(f"{bits_used_in_bytes = }")
+            usable_bits = BITS_IN_BYTE - bits_used_in_bytes
+            logger.debug(f"{usable_bits = }")
+            # for one mino we need 3 usable bits. If this byte has less than 3 usable bits, read one more byte
+            if usable_bits < MINO_BIT_LENGTH:
+                n_bytes_to_read = 2
+                usable_bits += BITS_IN_BYTE
+            else:
+                n_bytes_to_read = 1
+            byts = file.read(n_bytes_to_read)
+            if len(byts) < n_bytes_to_read:
+                bits_used = RANDOM_FILE_BIT_LENGTH
+                raise errors.RandomSourceDepleted(file.name, bits_used)
+            logger.debug(f"read {byts = }")
+            int_from_byts = int.from_bytes(byts, byteorder="big", signed=False) & (~((2 ** bits_used_in_bytes - 1) << (len(byts) * BITS_IN_BYTE - bits_used_in_bytes)))
+            logger.debug(("{0:0" + str(usable_bits) + "b}").format(int_from_byts))
+            potential_mino = int_from_byts >> (usable_bits - MINO_BIT_LENGTH)
+            if potential_mino == IGNORED_BIT_SEQUENCE:
+                logger.debug("ignoring bits {0:0b}".format(IGNORED_BIT_SEQUENCE))
+            else:
+                logger.debug(("potential_mino: {0:03b}").format(potential_mino))
+            bits_used += MINO_BIT_LENGTH
+            logger.debug(f"bits_used increased to {bits_used}")
+            file.seek(bits_used // BITS_IN_BYTE)
+        return (potential_mino, bits_used)
+    def read_randomness(self, file: io.BufferedReader, bits_used: int=0, n_minoes: int=0) -> tuple[Deque[int], int]:
+        """
+        Reads minoes from pregenerated random bytes file until it has read n_minoes.
+        Returns a deque of minoes and number of bits used.
+        `bits_used` is the total number of bits already read from the file with pregenerated random bytes
+        """
+        minoes = deque(tuple(None for _ in range(n_minoes)), maxlen=n_minoes)
+        logger.debug(minoes)
+        while None in minoes:
+            try:
+                (mino, bits_used) = self.get_mino(file, bits_used=bits_used)
+                minoes.append(mino)
+            except errors.RandomSourceDepleted as err:
+                while None in minoes:
+                    minoes.pop(None)
+                logger.warning(f"{file.name} is depleted!")
+                bits_used = RANDOM_FILE_BIT_LENGTH
+        logger.debug(f"minoes: {''.join(tuple(str(mino) for mino in minoes if mino is not None))}")
+        logger.debug(f"{bits_used = }")
+        return (minoes, bits_used)
+    def fill_buffer(self, n_minoes) -> None:
+        with self.init_file(self.random_file) as (file, pos_file, bits_used):
+            logger.debug("Buffering random minoes")
+            (minoes, updated_bits_used) = self.read_randomness(file, bits_used=bits_used, n_minoes=n_minoes)
+            self.buffer.extend(minoes)
+            self.write_position(pos_file, updated_bits_used)
+    def pop(self) -> None:
+        if len(self.buffer) < self.refill_limit
+            self.fill_buffer(self.buffer_length - self.refill_limit)
+        try:
+            return self.buffer.popleft()
+        except IndexError:
+            raise errors.RandomSourceDepleted(self.random_file.name, RANDOM_FILE_BIT_LENGTH)
+
 
 
 def date_as_str(date: datetime.datetime) -> str:
@@ -39,13 +160,13 @@ def file_url(date: datetime.datetime) -> str:
     return f"https://archive.random.org/download?file={date_as_str(date)}.bin"
 
 
-def download_bytes(config: config_loader.Config) -> pathlib.Path:
+def download_bytes() -> pathlib.Path:
     """
     Downloads today's pregenerated file of random bits from archive.random.org
     and saves it in the pregen directory
     and returns the pathlib.Path to it.
     """
-    pregen_dir = utils.provide_dir(config.path_to_home / "pregen")
+    pregen_dir = utils.provide_dir() / "pregen"
     date = datetime.datetime.today()
     target_file = pregen_dir / (date_as_str(date) + ".bin")
     headers = {"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36"}
@@ -57,90 +178,6 @@ def download_bytes(config: config_loader.Config) -> pathlib.Path:
     return target_file
 
 
-@contextmanager
-def init_file(file_path: pathlib.Path, bits_used: int) -> tuple[io.BufferedReader, io.BufferedRandom]:
-    file = open(file_path, mode="rb")
-    pos_file = open(file_path.with_suffix(".pos"), mode="r+b")
-    file.seek(bits_used // BITS_IN_BYTE)
-    try:
-        yield (file, pos_file)
-    finally:
-        file.close()
-        logger.debug(f"{target_file} closed.")
-        pos_file.close()
-        logger.debug(f"{pos_file} closed.")
-
-
-def get_mino(file: io.BufferedReader, bits_used: int=0) -> tuple[int, int]:
-    """
-    Reads from `file` unused bits until they can be mapped to mino.
-    returns mino as base 7 integer
-    """
-    # This loop will repeat until potential_mino will be other than IGNORED_BIT_SEQUENCE (7)
-    potential_mino = IGNORED_BIT_SEQUENCE
-    while potential_mino == IGNORED_BIT_SEQUENCE:
-        byts = file.read(1)
-        if byts:
-            logger.debug(f"read {byts = }")
-            bits_used_in_bytes = bits_used % BITS_IN_BYTE
-            logger.debug(f"{bits_used_in_bytes = }")
-            usable_bits = BITS_IN_BYTE - bits_used_in_bytes
-            logger.debug(f"{usable_bits = }")
-            # for one mino we need 3 usable bits. If this byte has less than 3 usable bits, read one more byte
-            if usable_bits < MINO_BIT_LENGTH:
-                byts += file.read(1)
-                if len(byts) < 2:
-                    bits_used = RANDOM_FILE_BIT_LENGTH
-                    raise errors.DepletedRandomSource(file.name, bits_used)
-                usable_bits += BITS_IN_BYTE
-                logger.debug(f"read {byts = }")
-            int_from_byts = int.from_bytes(byts, byteorder="big", signed=False) & (~((2 ** bits_used_in_bytes - 1) << (len(byts) * BITS_IN_BYTE - bits_used_in_bytes)))
-            logger.debug(("{0:0" + str(usable_bits) + "b}").format(int_from_byts))
-            potential_mino = int_from_byts >> (usable_bits - MINO_BIT_LENGTH)
-            if potential_mino == IGNORED_BIT_SEQUENCE:
-                logger.debug("ignoring bits {0:0b}".format(IGNORED_BIT_SEQUENCE))
-            else:
-                logger.debug(("potential_mino: {0:03b}").format(potential_mino))
-            bits_used += MINO_BIT_LENGTH
-            logger.debug(f"bits_used increased to {bits_used}")
-            file.seek(bits_used // BITS_IN_BYTE)
-        else:
-            bits_used = RANDOM_FILE_BIT_LENGTH
-            raise errors.DepletedRandomSource(file.name, bits_used)
-    return (potential_mino, bits_used)
-
-
-def read_randomness(file: io.BufferedReader, bits_used: int=0, n_minoes: int=0) -> tuple[Deque[int], int]:
-    """
-    Reads minoes from pregenerated random bytes file until it has read n_minoes.
-    Returns a deque of minoes and number of bits used.
-    `bits_used` is the total number of bits already read from the file with pregenerated random bytes
-    """
-    minoes = deque(tuple(None for _ in range(n_minoes)), maxlen=n_minoes)
-    logger.debug(minoes)
-    while None in minoes:
-        (mino, bits_used) = get_mino(file, bits_used=bits_used)
-        minoes.append(mino)
-        logger.debug(f"minoes: {''.join(tuple(str(mino) for mino in minoes if mino is not None))}")
-        logger.debug(f"{bits_used = }")
-    return (minoes, bits_used)
-
-
 if __name__ == "__main__":
-    from absolutris import testhelper
-    target_file = download_bytes(testhelper.config)
-    bits_used = RANDOM_FILE_BIT_LENGTH - 17
-    with init_file(target_file, bits_used) as (file, pos_file):
-        while True:
-            try:
-                n_minoes = int(input("How many minoes to read?: "))
-            except ValueError as e:
-                logger.error(e)
-                continue
-            if n_minoes == 0:
-                break
-            else:
-                try:
-                    (minoes, bits_used) = read_randomness(file, bits_used=bits_used, n_minoes=n_minoes)
-                except errors.DepletedRandomSource as e:
-                    logger.exception(e)
+    rfh = Random_File_Handler(download_bytes())
+    pop = rfh.pop
