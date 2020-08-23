@@ -35,7 +35,8 @@ class GuiNotImplemented(Error):
     """
     pass
 
-class DepletedRandomSource(Error):
+
+class RandomSourceDepleted(Error):
     """
     Raised when a generator is not capable of generating any more random numbers.
     """

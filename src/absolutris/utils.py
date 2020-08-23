@@ -8,7 +8,11 @@ import pathlib
 logger = logging.getLogger(__name__)
 
 
-def provide_dir(dir_name: pathlib.Path) -> pathlib.Path:
+dir_name = "absolutris"
+ini_name = "absolutris.config"
+
+
+def provide_dir() -> pathlib.Path:
     """
     Checks if there is a directory of name `dir_name` in the user home path.
     If not, it will try to create one. 

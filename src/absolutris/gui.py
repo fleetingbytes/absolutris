@@ -33,7 +33,7 @@ class Malicious(Gui):
 
 
 default = Gui()
-debug = Gui(flags=32)
+debug = Gui(flags=pygame.NOFRAME)
 
 m = Malicious(
         game_window_x_pos=0,

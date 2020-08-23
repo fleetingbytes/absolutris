@@ -76,7 +76,7 @@ class Game:
 def run(config: config_loader.Config) -> None:
     if config.cli.download:
         logger.debug("Downloading random bits")
-        pregen.download_bytes(config)
+        pregen.download_bytes()
     elif config.cli.gui is not None:
         game = Game(config)
         game.run_gui()

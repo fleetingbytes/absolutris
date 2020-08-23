@@ -4,9 +4,8 @@
 This module defines functions and classes which are shared across mutliple pytest modules during testruns
 """
 
-
+import pathlib
 from absolutris import utils
-from absolutris import entry
 from absolutris import gui
 from absolutris import config_loader
 from typing import Iterable
@@ -14,11 +13,11 @@ from typing import Type
 from typing import Union
 
 
-config_dir = utils.provide_dir(entry.dir_name)
+config_dir = utils.provide_dir()
 
 
 # instantiate a configuration:
-with config_loader.Config(config_dir / entry.ini_name) as config:
+with config_loader.Config(config_dir / utils.ini_name) as config:
     pass
 
 
@@ -59,7 +58,12 @@ def find_gui_instances() -> Iterable[gui.Gui]:
 
 def uint(bit_length: int, integer: int) -> int:
     """
-    Creates an unsigned int
+    Interprets any integer as an unsigned integer of the given bit length.
+    Returns the integer's positive two's complement.
+    It mimics the uint* types of classical programming languages, 
+    e.g. to convert i: int = -13 to uint8, one calls:
+        uint(8, -13)
+    The result will be 243. (Consequentially, that uint(8, 243) also returns 243).
     """
     if bit_length < 1:
         raise errors.UnsignedIntegerBitLength(f"Bit length must be at least 1")
@@ -84,6 +88,17 @@ def in_bitfield(integer: int, bitfield: int) -> bool:
 
 def pygame_wrapper(coro):
     yield from coro
+
+
+def create_random_bytes_file(byts: bytes) -> pathlib.Path:
+    """
+    Creates the file `test_bytes.bin` in user's home/absolutris.
+    Writes the given bytes into it and returns the path to this file
+    """
+    file_path = utils.provide_dir() / "test_bytes.bin"
+    with open(file_path, mode="wb") as file:
+        file.write(byts)
+    return file_path
 
 
 if __name__ == "__main__":

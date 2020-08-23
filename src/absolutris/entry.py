@@ -15,17 +15,13 @@ from absolutris import game
 # from absolutris import generators
 
 
-dir_name = "absolutris"
-ini_name = "absolutris.config"
-
-
 # Setup logging
-def setup_logging_directory(dir_name):
+def setup_logging_directory():
     """
     Returns a logger.
     """
     try:
-        path_to_dir = utils.provide_dir(dir_name)
+        path_to_dir = utils.provide_dir()
         logger_config = logging_conf.create_dict_config(path_to_dir, "debug.log", "errors.log")
     except FileExistsError:
         logger.error(f"Failed to create the directory `{str(path_to_dir)}` because it already exists as a file.")
@@ -53,9 +49,9 @@ def cli_start() -> None:
     """
     Start from command line
     """
-    logger, path_to_dir = setup_logging_directory(dir_name)
+    logger, path_to_dir = setup_logging_directory()
     logger.debug("Program started")
-    with config_loader.Config(path_to_dir / ini_name) as config:
+    with config_loader.Config(path_to_dir / utils.ini_name) as config:
         config.cli = parse_cli_arguments()
         logger.debug(f" Parsed arguments: {config.cli}")
     try:

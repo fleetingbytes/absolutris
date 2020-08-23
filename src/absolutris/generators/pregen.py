@@ -16,7 +16,6 @@ from __future__ import annotations
 import pathlib
 import datetime
 import requests
-import numpy
 import io
 import logging
 from contextlib import contextmanager
@@ -25,7 +24,7 @@ from absolutris import utils
 from absolutris import errors
 
 # Setup logging:
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -39,16 +38,26 @@ class Random_File_Handler:
     """
     Reads from a random bytes file.
     Creates a corresponding .pos file which tracks how many bits
-    from the random bytes file have already been read
+    from the random bytes file have already been read.
+
+    Has to be initialized with `buffer_length` >= 1.
     """
-    def __init__(self, file_path: pathlib.Path, buffer_lenght: int=50) -> None:
+    def __init__(self, file_path: pathlib.Path, buffer_length: int=50) -> None:
         self.random_file = file_path
-        self.buffer_length = 50
+        if buffer_length < 1:
+            raise ValueError("Random_File_Handler needs a buffer_length >= 1")
+        else:
+            self.buffer_length = buffer_length
         self.refill_limit = self.buffer_length // 2
         self.buffer = deque(tuple(None for _ in range(self.buffer_length)), maxlen=self.buffer_length)
         self.fill_buffer(self.buffer_length)
     @contextmanager
     def init_file(self, file_path: pathlib.Path) -> tuple[io.BufferedReader, io.BufferedRandom, int]:
+        """
+        Creates two filehandles. One for the file with random bytes (`file`), 
+        another for a file where it tracks how many bits from the random bytes file have already been used (`pos_file`).
+        Returns the two file handles and the number of bits which have already been used from the random bytes file.
+        """
         file = open(file_path, mode="rb")
         pos_file_path = file_path.with_suffix(".pos")
         pos_file_path.touch(mode=0o666, exist_ok=True)
@@ -64,6 +73,10 @@ class Random_File_Handler:
             pos_file.close()
             logger.debug(f"{pos_file.name} closed.")
     def write_position(self, pos_file: io.BufferedRandom, bits_used: int) -> None:
+        """
+        Write the number of used bits to the position file `pos_file`.
+        Returns the cursor to the beginning of the file for next access.
+        """
         pos_file.write(bits_used.to_bytes(length=RANDOM_FILE_BIT_LENGTH.bit_length() // BITS_IN_BYTE, byteorder="big", signed=False))
         pos_file.seek(0)
         logger.debug(f"{bits_used = } written to {pos_file.name}")
@@ -105,7 +118,7 @@ class Random_File_Handler:
             if potential_mino == IGNORED_BIT_SEQUENCE:
                 logger.debug("ignoring bits {0:0b}".format(IGNORED_BIT_SEQUENCE))
             else:
-                logger.debug(("potential_mino: {0:03b}").format(potential_mino))
+                logger.debug(("potential_mino: {0:0" + MINO_BIT_LENGTH +"b}").format(potential_mino))
             bits_used += MINO_BIT_LENGTH
             logger.debug(f"bits_used increased to {bits_used}")
             file.seek(bits_used // BITS_IN_BYTE)
@@ -124,26 +137,35 @@ class Random_File_Handler:
                 minoes.append(mino)
             except errors.RandomSourceDepleted as err:
                 while None in minoes:
-                    minoes.pop(None)
+                    minoes.remove(None)
                 logger.warning(f"{file.name} is depleted!")
                 bits_used = RANDOM_FILE_BIT_LENGTH
         logger.debug(f"minoes: {''.join(tuple(str(mino) for mino in minoes if mino is not None))}")
         logger.debug(f"{bits_used = }")
         return (minoes, bits_used)
     def fill_buffer(self, n_minoes) -> None:
+        """
+        Refills the buffer of minoes.
+        Minoes are buffered to avoid too frequent file accesses to the
+        random bytes file and the position file.
+        """
         with self.init_file(self.random_file) as (file, pos_file, bits_used):
             logger.debug("Buffering random minoes")
             (minoes, updated_bits_used) = self.read_randomness(file, bits_used=bits_used, n_minoes=n_minoes)
             self.buffer.extend(minoes)
             self.write_position(pos_file, updated_bits_used)
     def pop(self) -> None:
-        if len(self.buffer) < self.refill_limit
-            self.fill_buffer(self.buffer_length - self.refill_limit)
+        """
+        Returns the left-most mino in self.buffer.
+        Replenishes the buffer if it holds less minoes than self.refill_limit.
+        Raises errors.RandomSourceDepleted when poping from an empty buffer.
+        """
         try:
+            if len(self.buffer) <= self.refill_limit:
+                self.fill_buffer(self.buffer_length - self.refill_limit)
             return self.buffer.popleft()
         except IndexError:
             raise errors.RandomSourceDepleted(self.random_file.name, RANDOM_FILE_BIT_LENGTH)
-
 
 
 def date_as_str(date: datetime.datetime) -> str:
@@ -178,6 +200,12 @@ def download_bytes() -> pathlib.Path:
     return target_file
 
 
+rfh = Random_File_Handler(download_bytes(), buffer_length=10)
+pop = rfh.pop
+
+
 if __name__ == "__main__":
-    rfh = Random_File_Handler(download_bytes())
+    with open(utils.provide_dir() / "pregen" / "2020-08-23.pos", mode="wb") as pos_file:
+        pos_file.write((RANDOM_FILE_BIT_LENGTH - 180).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
+    rfh = Random_File_Handler(download_bytes(), buffer_length=50)
     pop = rfh.pop
