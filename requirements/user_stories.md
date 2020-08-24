@@ -24,5 +24,4 @@
 * In absolute control mode the tetromino can be rotated directly to any of the four directions (north, east, south, west).
 
 ### Custom Levels
-
-
+* As a user with basic programming knowledge I want to be able to set up and sequence customized levels to define the progress through a session of absolutis.
