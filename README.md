@@ -40,7 +40,7 @@ The Greatest Common Factor:
 GCF = 120
 
 
-### Mino Production Pipeline
+### Tetromino Production Pipeline
 
 #### Generator
 

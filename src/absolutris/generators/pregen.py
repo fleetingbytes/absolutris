@@ -20,11 +20,12 @@ import io
 import logging
 from contextlib import contextmanager
 from collections import deque
+from typing import Generator
 from absolutris import utils
 from absolutris import errors
 
 # Setup logging:
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -44,12 +45,15 @@ class Random_File_Handler:
     """
     def __init__(self, file_path: pathlib.Path, buffer_length: int=50) -> None:
         self.random_file = file_path
+        # delete after debugging
+        with open(self.random_file.with_suffix(".pos"), mode="wb") as pos_file:
+            pos_file.write((RANDOM_FILE_BIT_LENGTH- 1000).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
         if buffer_length < 1:
             raise ValueError("Random_File_Handler needs a buffer_length >= 1")
         else:
             self.buffer_length = buffer_length
         self.refill_limit = self.buffer_length // 2
-        self.buffer = deque(tuple(None for _ in range(self.buffer_length)), maxlen=self.buffer_length)
+        self.buffer = self.remove_None(deque(tuple(None for _ in range(self.buffer_length)), maxlen=self.buffer_length))
         self.fill_buffer(self.buffer_length)
     @contextmanager
     def init_file(self, file_path: pathlib.Path) -> tuple[io.BufferedReader, io.BufferedRandom, int]:
@@ -80,6 +84,14 @@ class Random_File_Handler:
         pos_file.write(bits_used.to_bytes(length=RANDOM_FILE_BIT_LENGTH.bit_length() // BITS_IN_BYTE, byteorder="big", signed=False))
         pos_file.seek(0)
         logger.debug(f"{bits_used = } written to {pos_file.name}")
+    def remove_None(self, minoes: collections.deque) -> collections.deque:
+        """
+        Removes None values from the deque of minoes.
+        (None values remain in the deque when they could not be replaced with tetrominoes, e.g. when random source is depleted)
+        """
+        while None in minoes:
+            minoes.remove(None)
+        return minoes
     def get_mino(self, file: io.BufferedReader, bits_used: int=0) -> tuple[int, int]:
         """
         Reads from `file` unused bits until they can be mapped to mino.
@@ -136,8 +148,7 @@ class Random_File_Handler:
                 (mino, bits_used) = self.get_mino(file, bits_used=bits_used)
                 minoes.append(mino)
             except errors.RandomSourceDepleted as err:
-                while None in minoes:
-                    minoes.remove(None)
+                minoes = self.remove_None(minoes)
                 logger.warning(f"{file.name} is depleted!")
                 bits_used = RANDOM_FILE_BIT_LENGTH
         logger.debug(f"minoes: {''.join(tuple(str(mino) for mino in minoes if mino is not None))}")
@@ -153,6 +164,7 @@ class Random_File_Handler:
             logger.debug("Buffering random minoes")
             (minoes, updated_bits_used) = self.read_randomness(file, bits_used=bits_used, n_minoes=n_minoes)
             self.buffer.extend(minoes)
+            logger.debug(f"Extended buffer: {self.buffer}")
             self.write_position(pos_file, updated_bits_used)
     def pop(self) -> None:
         """
@@ -166,6 +178,15 @@ class Random_File_Handler:
             return self.buffer.popleft()
         except IndexError:
             raise errors.RandomSourceDepleted(self.random_file.name, RANDOM_FILE_BIT_LENGTH)
+    def source(self) -> Generator[int, None, None]:
+        """
+        Returns a generator of tetrominoes which will return base-7 integers.
+        """
+        try:
+            while True:
+                yield self.pop()
+        except errors.RandomSourceDepleted as err:
+            return None
 
 
 def date_as_str(date: datetime.datetime) -> str:
@@ -202,6 +223,7 @@ def download_bytes() -> pathlib.Path:
 
 rfh = Random_File_Handler(download_bytes(), buffer_length=10)
 pop = rfh.pop
+source = rfh.source
 
 
 if __name__ == "__main__":

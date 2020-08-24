@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import collections
 import logging
+import pyfiglet
 
 
 # Setup logging
@@ -15,7 +16,7 @@ class Text_Menu:
     Command prompt menu to debug and play tetris with no GUI.
     """
     def __init__(self) -> None:
-        pass
+        self.figlet = pyfiglet.Figlet(font="drpepper")
     def wait_key(self) -> str:
         """
         Wait for a key press on the console and return it.
@@ -43,13 +44,10 @@ class Text_Menu:
         Renders a command prompt menu for each exrtacted traces file.
         Manages key input and acts accordingly
         """
+        for line in self.figlet.renderText("Menu").split("\n"):
+            logger.info(line)
         for key, text in options.items():
-            print(f"({key}) {text}")
-        key = self.wait_key()
-        try:
-            return key
-        except ValueError:
-            logger.debug(f"Quitting menu")
+            logger.info(f"({key}) {text}")
 
 
 if __name__ == "__main__":

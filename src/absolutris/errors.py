@@ -44,3 +44,10 @@ class RandomSourceDepleted(Error):
         self.file_name = file_name
         self.bits_used = bits_used
         self.message = f"Used all random numbers in {self.file_name}"
+
+
+class EndGame(Error):
+    """
+    Raised when game must end, e.g. when the random source is depleted.
+    """
+    pass

@@ -10,6 +10,7 @@ from typing import Coroutine
 # Own modules
 from absolutris import errors
 from absolutris.generators import pregen
+from absolutris import packers
 from absolutris import menu
 
 
@@ -84,19 +85,47 @@ def run(config: config_loader.Config) -> None:
         game.run_gui()
     else:
         logger.debug("Runing game with no gui")
+        source = pregen.source()
+        packer = packers.Packer(source)
+        bag = packer.bag_gen()
         textmenu = menu.Text_Menu()
         options = collections.OrderedDict((
-                ("P", "Pop from Pregen"),
+                ("G", "Generate Random Tetromino, next(source)"),
+                ("A", "Show pregen.rfh.buffer"),
+                ("S", "Show packer.bag"),
+                ("N", "Pop form pregen.rfh.buffer"),
+                ("B", "Pop form packer.bag"),
+                ("M", "Show Menu"),
                 ("Q", "Quit"),
                 ))
+        textmenu.show(options)
         while True:
-            key = textmenu.show(options)
+            key = textmenu.wait_key()
             if key not in options.keys():
                 continue
             elif key == "Q":
                 break
-            elif key == "P":
-                logger.info(f"pregen: {pregen.pop()}")
+            elif key == "M":
+                textmenu.show(options)
+            elif key == "G":
+                try:
+                    logger.info(f"Tetromino: {next(source)}")
+                except StopIteration:
+                    logger.warning(f"Random source depleted")
+            elif key == "A":
+                logger.debug(f"{pregen.rfh.buffer = }")
+            elif key == "S":
+                logger.debug(f"{packer.bag = }")
+            elif key == "N":
+                try:
+                    logger.debug(f"{pregen.rfh.buffer = }, -> popping {pregen.rfh.buffer.popleft()}")
+                except IndexError:
+                    logger.debug(f"Nothing to pop from {pregen.rfh.buffer = }")
+            elif key == "B":
+                try:
+                    logger.info(f"{packer.bag = }, -> popping {next(bag)}")
+                except StopIteration as err:
+                    break
         logger.debug("Finished runing game with no gui")
 
 
