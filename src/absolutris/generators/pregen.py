@@ -118,7 +118,7 @@ class Random_File_Handler:
             if potential_mino == IGNORED_BIT_SEQUENCE:
                 logger.debug("ignoring bits {0:0b}".format(IGNORED_BIT_SEQUENCE))
             else:
-                logger.debug(("potential_mino: {0:0" + MINO_BIT_LENGTH +"b}").format(potential_mino))
+                logger.debug(("potential_mino: {0:0" + str(MINO_BIT_LENGTH) +"b}").format(potential_mino))
             bits_used += MINO_BIT_LENGTH
             logger.debug(f"bits_used increased to {bits_used}")
             file.seek(bits_used // BITS_IN_BYTE)

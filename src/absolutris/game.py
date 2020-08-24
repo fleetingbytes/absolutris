@@ -3,12 +3,14 @@
 import pygame
 import os
 import logging
+import collections
 # Necessary for Typing
 from absolutris import config_loader
 from typing import Coroutine
 # Own modules
 from absolutris import errors
 from absolutris.generators import pregen
+from absolutris import menu
 
 
 # setup logging
@@ -82,8 +84,20 @@ def run(config: config_loader.Config) -> None:
         game.run_gui()
     else:
         logger.debug("Runing game with no gui")
+        textmenu = menu.Text_Menu()
+        options = collections.OrderedDict((
+                ("P", "Pop from Pregen"),
+                ("Q", "Quit"),
+                ))
+        while True:
+            key = textmenu.show(options)
+            if key not in options.keys():
+                continue
+            elif key == "Q":
+                break
+            elif key == "P":
+                logger.info(f"pregen: {pregen.pop()}")
         logger.debug("Finished runing game with no gui")
-
 
 
 if __name__ == "__main__":
