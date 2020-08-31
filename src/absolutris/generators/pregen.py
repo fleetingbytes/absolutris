@@ -47,8 +47,8 @@ class Random_File_Handler:
         self.random_file = file_path
         self.random_file_bit_length = self.random_file.stat().st_size * BITS_IN_BYTE
         # delete after debugging
-        with open(self.random_file.with_suffix(".pos"), mode="wb") as pos_file:
-            pos_file.write((self.random_file_bit_length - 1000).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
+        # with open(self.random_file.with_suffix(".pos"), mode="wb") as pos_file:
+            # pos_file.write((self.random_file_bit_length - 1000).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
         # --- stop deletion ---
         if buffer_length < 1:
             raise ValueError("Random_File_Handler needs a buffer_length >= 1")
@@ -212,7 +212,7 @@ def download_bytes() -> pathlib.Path:
     and returns the pathlib.Path to it.
     """
     pregen_dir = utils.provide_dir() / "pregen"
-    date = datetime.datetime.today()
+    date = datetime.datetime.now(datetime.timezone.utc)
     target_file = pregen_dir / (date_as_str(date) + ".bin")
     headers = {"User-Agent": "Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.64 Safari/537.36"}
     url = file_url(date)
