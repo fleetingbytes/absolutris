@@ -17,6 +17,16 @@ def test_raise_GuiNotImplemented() -> None:
         game_test = game.Game(testhelper.config)
 
 
+def test_raise_PlanNotImplemented() -> None:
+    """
+    Tests if PlanNotImplemented error is raised when user selected a not implemented or non-instantiated plan, e.g.
+    $ absolutris -p missing_plan
+    """
+    with pytest.raises(errors.PlanNotImplemented):
+        testhelper.config.cli = testhelper.Cli(plan="not_instantiated")
+        game_test = game.Game(testhelper.config)
+
+
 def test_game_with_gui() -> None:
     """
     Tests the instance fuinctions of game.Game()

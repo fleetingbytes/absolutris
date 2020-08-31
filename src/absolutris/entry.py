@@ -39,6 +39,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Absolutris: My kind of tetris")
     parser.add_argument("-g", "--gui", type=str, help="define which GUI to use")
+    parser.add_argument("-p", "--plan", type=str, help="define which game plan to use")
     parser.add_argument("-s", "--stats", action="store_true")
     parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument("-d", "--download", action="store_true", help="download random bytes from random.org")

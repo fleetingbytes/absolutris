@@ -6,7 +6,6 @@ import logging
 import collections
 # Necessary for Typing
 from absolutris import config_loader
-from typing import Coroutine
 # Own modules
 from absolutris import errors
 from absolutris.generators import pregen
@@ -25,7 +24,8 @@ class Game:
     """
     def __init__(self, config: config_loader.Config) -> None:
         self.config = config
-        if self.config.cli.gui == "default":
+        # Load GUI
+        if (self.config.cli.gui == "default") or (self.config.cli.gui is None):
             logger.debug("using default gui")
             from absolutris.gui import default as gui
         elif self.config.cli.gui == "debug":
@@ -37,6 +37,13 @@ class Game:
         else:
             raise errors.GuiNotImplemented(f"Cannot find any instance of \"{self.config.cli.gui}\" in gui.py")
         self.gui = gui
+        # Load game plan
+        if (self.config.cli.plan == "default") or (self.config.cli.plan is None):
+            from absolutris.plans import default as plan
+            logger.debug("using default plan")
+            self.plan = plan
+        else:
+            raise errors.PlanNotImplemented(f"Cannot find any instance of \"{self.config.cli.plan}\" in plan.py")
     def setup_game_window(self) -> None:
         # Set initial game window position
         os.environ["SDL_VIDEO_WINDOW_POS"] = f"{self.gui.game_window_x_pos},{self.gui.game_window_y_pos}"
@@ -47,6 +54,9 @@ class Game:
             )
         self.game_window.fill(self.gui.colors_window_bg)
     def run_gui(self, testing: bool=False) -> None:
+        """
+        Tetris implementation with a pygame GUI.
+        """
         logger.debug(f"Running game with {self.config.cli.gui} gui")
         pygame.init()
         self.setup_game_window()
@@ -75,16 +85,14 @@ class Game:
         logger.info(f"Left main game loop")
         pygame.quit()
         logger.debug("Finished running game with {self.config.cli.gui} gui")
+    def run_nogui(self) -> None:
+        """
+        Tetris implementation without pygame GUI.
+        Used for testing and debugging purposes.
 
-
-def run(config: config_loader.Config) -> None:
-    if config.cli.download:
-        logger.debug("Downloading random bits")
-        pregen.download_bytes()
-    elif config.cli.gui is not None:
-        game = Game(config)
-        game.run_gui()
-    else:
+        We will still use the instance gui.debug, but will ignore only use
+        the non-graphic-related attributes like playfield size etc.
+        """
         logger.debug("Runing game with no gui")
         source = pregen.source()
         packer = packers.Packer(source)
@@ -136,6 +144,18 @@ def run(config: config_loader.Config) -> None:
             elif key == "M":
                 textmenu.show(options)
         logger.debug("Finished runing game with no gui")
+
+
+def run(config: config_loader.Config) -> None:
+    if config.cli.download:
+        logger.debug("Downloading random bits")
+        pregen.download_bytes()
+    else:
+        game = Game(config)
+        if config.cli.gui is not None:
+            game.run_gui()
+        else:
+            game.run_nogui()
 
 
 if __name__ == "__main__":

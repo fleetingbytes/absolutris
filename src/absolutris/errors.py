@@ -36,6 +36,13 @@ class GuiNotImplemented(Error):
     pass
 
 
+class PlanNotImplemented(Error):
+    """
+    Raised when trying to load a game plan which is not instantiated in plans.py.
+    """
+    pass
+
+
 class RandomSourceDepleted(Error):
     """
     Raised when a generator is not capable of generating any more random numbers.

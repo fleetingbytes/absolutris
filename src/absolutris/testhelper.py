@@ -7,6 +7,7 @@ This module defines functions and classes which are shared across mutliple pytes
 import pathlib
 from absolutris import utils
 from absolutris import gui
+from absolutris import plans
 from absolutris import config_loader
 from typing import Iterable
 from typing import Type
@@ -25,9 +26,16 @@ class Cli:
     """
     Class simulating parsed command line arguments.
     """
-    def __init__(self, download: bool=False, gui: Union[None, str]="default", verbose: bool=False, stats: bool=False):
+    def __init__(self, 
+                 download: bool=False, 
+                 gui: Union[None, str]="default", 
+                 plan: Union[None, str]="default", 
+                 verbose: bool=False, 
+                 stats: bool=False,
+            ):
         self.download = download
         self.gui = gui
+        self.plan = plan
         self.verbose = verbose
         self.stats = stats
 
@@ -51,6 +59,30 @@ def find_gui_instances() -> Iterable[gui.Gui]:
     for name, item in gui.__dict__.items():
         try:
             if isinstance(item, gui.Gui):
+                yield name, item
+        except TypeError:
+            continue
+
+
+def find_plan_classes() -> Iterable[Type[plans.Plan]]:
+    """
+    Yields all Plan classes found in plans.py.
+    """
+    for name, item in plans.__dict__.items():
+        try:
+            if issubclass(item, plans.Plan):
+                yield name, item
+        except TypeError:
+            continue
+
+
+def find_plan_instances() -> Iterable[plans.Plan]:
+    """
+    Yields all instances of a Plan class (or a Plan subclass) in plans.py.
+    """
+    for name, item in plans.__dict__.items():
+        try:
+            if isinstance(item, plans.Plan):
                 yield name, item
         except TypeError:
             continue
