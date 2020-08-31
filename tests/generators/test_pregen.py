@@ -46,13 +46,13 @@ def test_rfh() -> None:
     assert isinstance(rfh, pregen.Random_File_Handler)
     assert file_path.with_suffix(".pos").exists()
     with open(file_path.with_suffix(".pos"), mode="wb") as pos_file:
-        pos_file.write((pregen.RANDOM_FILE_BIT_LENGTH - 1000).to_bytes(length=pregen.MINO_BIT_LENGTH, byteorder="big", signed=False))
+        pos_file.write((pregen.rfh.random_file_bit_length - 1000).to_bytes(length=pregen.MINO_BIT_LENGTH, byteorder="big", signed=False))
     # Test rfh.pop()
     with pytest.raises(errors.RandomSourceDepleted):
         while True:
             assert rfh.pop() is not None
     with open(file_path.with_suffix(".pos"), mode="rb") as pos_file:
-        assert int.from_bytes(pos_file.read(), byteorder="big", signed=False) == pregen.RANDOM_FILE_BIT_LENGTH
+        assert int.from_bytes(pos_file.read(), byteorder="big", signed=False) == pregen.rfh.random_file_bit_length
     file_path.with_suffix(".pos").unlink()
     file_path.unlink()
 

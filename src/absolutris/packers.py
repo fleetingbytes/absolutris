@@ -60,6 +60,5 @@ class Packer:
                     raise errors.EndGame("Packer wants to end game, you should investigate how we got here.")
 
 
-
 if __name__ == "__main__":
     pass

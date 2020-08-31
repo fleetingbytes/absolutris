@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-"""
+r"""
   _____   ______ _______  ______ _______ __   _
  |_____] |_____/ |______ |  ____ |______ | \  |
  |       |    \_ |______ |_____| |______ |  \_|
@@ -30,9 +30,9 @@ logger = logging.getLogger(__name__)
 
 
 BITS_IN_BYTE = 8
-MINO_BIT_LENGTH = 3
 IGNORED_BIT_SEQUENCE = 0b111
-RANDOM_FILE_BIT_LENGTH = 0x800000
+NUMBER_OF_MINOES = len(("I", "J", "L", "O", "S", "T", "Z"))
+MINO_BIT_LENGTH = NUMBER_OF_MINOES.bit_length()
 
 
 class Random_File_Handler:
@@ -45,9 +45,11 @@ class Random_File_Handler:
     """
     def __init__(self, file_path: pathlib.Path, buffer_length: int=50) -> None:
         self.random_file = file_path
+        self.random_file_bit_length = self.random_file.stat().st_size * BITS_IN_BYTE
         # delete after debugging
         with open(self.random_file.with_suffix(".pos"), mode="wb") as pos_file:
-            pos_file.write((RANDOM_FILE_BIT_LENGTH- 1000).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
+            pos_file.write((self.random_file_bit_length - 1000).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
+        # --- stop deletion ---
         if buffer_length < 1:
             raise ValueError("Random_File_Handler needs a buffer_length >= 1")
         else:
@@ -81,7 +83,7 @@ class Random_File_Handler:
         Write the number of used bits to the position file `pos_file`.
         Returns the cursor to the beginning of the file for next access.
         """
-        pos_file.write(bits_used.to_bytes(length=RANDOM_FILE_BIT_LENGTH.bit_length() // BITS_IN_BYTE, byteorder="big", signed=False))
+        pos_file.write(bits_used.to_bytes(length=self.random_file_bit_length.bit_length() // BITS_IN_BYTE, byteorder="big", signed=False))
         pos_file.seek(0)
         logger.debug(f"{bits_used = } written to {pos_file.name}")
     def remove_None(self, minoes: collections.deque) -> collections.deque:
@@ -121,14 +123,14 @@ class Random_File_Handler:
                 n_bytes_to_read = 1
             byts = file.read(n_bytes_to_read)
             if len(byts) < n_bytes_to_read:
-                bits_used = RANDOM_FILE_BIT_LENGTH
+                bits_used = self.random_file_bit_length
                 raise errors.RandomSourceDepleted(file.name, bits_used)
             logger.debug(f"read {byts = }")
             int_from_byts = int.from_bytes(byts, byteorder="big", signed=False) & (~((2 ** bits_used_in_bytes - 1) << (len(byts) * BITS_IN_BYTE - bits_used_in_bytes)))
             logger.debug(("{0:0" + str(usable_bits) + "b}").format(int_from_byts))
             potential_mino = int_from_byts >> (usable_bits - MINO_BIT_LENGTH)
             if potential_mino == IGNORED_BIT_SEQUENCE:
-                logger.debug("ignoring bits {0:0b}".format(IGNORED_BIT_SEQUENCE))
+                logger.debug("ignoring bits {0:0b}".format(potential_mino))
             else:
                 logger.debug(("potential_mino: {0:0" + str(MINO_BIT_LENGTH) +"b}").format(potential_mino))
             bits_used += MINO_BIT_LENGTH
@@ -150,7 +152,7 @@ class Random_File_Handler:
             except errors.RandomSourceDepleted as err:
                 minoes = self.remove_None(minoes)
                 logger.warning(f"{file.name} is depleted!")
-                bits_used = RANDOM_FILE_BIT_LENGTH
+                bits_used = self.random_file_bit_length
         logger.debug(f"minoes: {''.join(tuple(str(mino) for mino in minoes if mino is not None))}")
         logger.debug(f"{bits_used = }")
         return (minoes, bits_used)
@@ -177,7 +179,7 @@ class Random_File_Handler:
                 self.fill_buffer(self.buffer_length - self.refill_limit)
             return self.buffer.popleft()
         except IndexError:
-            raise errors.RandomSourceDepleted(self.random_file.name, RANDOM_FILE_BIT_LENGTH)
+            raise errors.RandomSourceDepleted(self.random_file.name, self.random_file_bit_length)
     def source(self) -> Generator[int, None, None]:
         """
         Returns a generator of tetrominoes which will return base-7 integers.
@@ -227,7 +229,8 @@ source = rfh.source
 
 
 if __name__ == "__main__":
-    with open(utils.provide_dir() / "pregen" / "2020-08-23.pos", mode="wb") as pos_file:
-        pos_file.write((RANDOM_FILE_BIT_LENGTH - 180).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
-    rfh = Random_File_Handler(download_bytes(), buffer_length=50)
-    pop = rfh.pop
+    # with open(utils.provide_dir() / "pregen" / "2020-08-23.pos", mode="wb") as pos_file:
+        # pos_file.write((self.random_file_bit_length - 180).to_bytes(length=MINO_BIT_LENGTH, byteorder="big", signed=False))
+    # rfh = Random_File_Handler(download_bytes(), buffer_length=50)
+    # pop = rfh.pop
+    pass

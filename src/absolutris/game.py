@@ -11,6 +11,7 @@ from typing import Coroutine
 from absolutris import errors
 from absolutris.generators import pregen
 from absolutris import packers
+from absolutris import next_window
 from absolutris import menu
 
 
@@ -88,13 +89,17 @@ def run(config: config_loader.Config) -> None:
         source = pregen.source()
         packer = packers.Packer(source)
         bag = packer.bag_gen()
+        next_three = next_window.Next_Window(bag, length=3)
+        next_pieces = next_three.next_gen()
         textmenu = menu.Text_Menu()
         options = collections.OrderedDict((
-                ("G", "Generate Random Tetromino, next(source)"),
+                ("G", "Pull from source, next(source)"),
                 ("A", "Show pregen.rfh.buffer"),
                 ("S", "Show packer.bag"),
                 ("N", "Pop form pregen.rfh.buffer"),
-                ("B", "Pop form packer.bag"),
+                ("B", "Pull form packer.bag, next(bag)"),
+                ("Z", "Show next_pieces"),
+                ("X", "Pull from next_pieces, next(next_three)"),
                 ("M", "Show Menu"),
                 ("Q", "Quit"),
                 ))
@@ -103,10 +108,6 @@ def run(config: config_loader.Config) -> None:
             key = textmenu.wait_key()
             if key not in options.keys():
                 continue
-            elif key == "Q":
-                break
-            elif key == "M":
-                textmenu.show(options)
             elif key == "G":
                 try:
                     logger.info(f"Tetromino: {next(source)}")
@@ -126,6 +127,14 @@ def run(config: config_loader.Config) -> None:
                     logger.info(f"{packer.bag = }, -> popping {next(bag)}")
                 except StopIteration as err:
                     break
+            elif key == "Z":
+                logger.info(f"{next_three.window = }")
+            elif key == "X":
+                logger.info(f"{next_three.window} --> {next(next_pieces)} --> {next_three.window}")
+            elif key == "Q":
+                break
+            elif key == "M":
+                textmenu.show(options)
         logger.debug("Finished runing game with no gui")
 
 

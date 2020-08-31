@@ -4,10 +4,13 @@ from collections import deque
 import time
 from typing import List
 from typing import Deque
+from typing import Generator
 from queue import Empty
 import logging
 
 
+# Setup logging
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -42,15 +45,20 @@ class RandomSource:
             result = self.buffer.popleft()
         logger.debug(f"popping {result}")
         return result
+    def source(self) -> Generator[int, None, None]:
+        while True:
+            yield self.pop()
 
 
 src = RandomSource(api_key)
 pop = src.pop
+source = src.source
 
 
 if __name__ == "__main__":
+    s = source()
     while True:
-        number = pop()
+        number = next(s)
         print(number)
         logger.debug(f"{number}, quota: {src.check_quota()}")
         time.sleep(0.1)
