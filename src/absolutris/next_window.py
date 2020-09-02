@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 import logging
 import collections
 from typing import Generator
@@ -21,7 +20,7 @@ class Next_Window:
     `length` is the number of pieces shown in this window. Please note
              that Absolutris GUIs have a limited capability of showing
              next pieces. In the end it's the GUIs decision how many upcoming
-             pieces will be shown.
+             pieces will be shown. 
     """
     def __init__(self, source: Generator[int, None, None], length: int=DEFAULT_WINDOW_LENGTH):
         self.source = source
@@ -31,8 +30,12 @@ class Next_Window:
         else:
             self.window = collections.deque(tuple(next(self.source) for _ in range(DEFAULT_WINDOW_LENGTH)))
             self.length = 0
-        self.show = bool(self.length)
         self.spawn = self.next_gen()
+    def show(self, number: int) -> list:
+        result = list()
+        for i in range(min(self.length, number)):
+            result.append(self.window[i])
+        return result
     def next_gen(self) -> Generator[int, None, None]:
         while self.window:
             to_spawn = self.window.popleft()
@@ -47,4 +50,6 @@ class Next_Window:
 
 
 if __name__ == "__main__":
+    # from absolutris.generators import pregen as src
+    # nw = Next_Window(source=src.source(), length=3)
     pass

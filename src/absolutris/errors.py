@@ -53,6 +53,14 @@ class RandomSourceDepleted(Error):
         self.message = f"Used all random numbers in {self.file_name}"
 
 
+class MissedLevel(Error):
+    """
+    Raised when it is no longer possible to start a level.
+    Used for "secret" levels.
+    """
+    pass
+
+
 class EndGame(Error):
     """
     Raised when game must end, e.g. when the random source is depleted.

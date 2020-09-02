@@ -8,9 +8,6 @@ import collections
 from absolutris import config_loader
 # Own modules
 from absolutris import errors
-from absolutris.generators import pregen
-from absolutris import packers
-from absolutris import next_window
 from absolutris import menu
 
 
@@ -25,8 +22,11 @@ class Game:
     def __init__(self, config: config_loader.Config) -> None:
         self.config = config
         # Load GUI
-        if (self.config.cli.gui == "default") or (self.config.cli.gui is None):
-            logger.debug("using default gui")
+        if self.config.cli.gui in ("default", "cli", None):
+            if self.config.cli.gui != "cli":
+                logger.debug("using default gui")
+            else:
+                logger.debug("will use command line as gui")
             from absolutris.gui import default as gui
         elif self.config.cli.gui == "debug":
             logger.debug("using DEBUG gui")
@@ -94,20 +94,10 @@ class Game:
         the non-graphic-related attributes like playfield size etc.
         """
         logger.debug("Runing game with no gui")
-        source = pregen.source()
-        packer = packers.Packer(source)
-        bag = packer.bag_gen()
-        next_three = next_window.Next_Window(bag, length=3)
-        next_pieces = next_three.next_gen()
         textmenu = menu.Text_Menu()
         options = collections.OrderedDict((
-                ("G", "Pull from source, next(source)"),
-                ("A", "Show pregen.rfh.buffer"),
-                ("S", "Show packer.bag"),
-                ("N", "Pop form pregen.rfh.buffer"),
-                ("B", "Pull form packer.bag, next(bag)"),
                 ("Z", "Show next_pieces"),
-                ("X", "Pull from next_pieces, next(next_three)"),
+                ("X", "Pull from next_pieces"),
                 ("M", "Show Menu"),
                 ("Q", "Quit"),
                 ))
@@ -116,33 +106,14 @@ class Game:
             key = textmenu.wait_key()
             if key not in options.keys():
                 continue
-            elif key == "G":
-                try:
-                    logger.info(f"Tetromino: {next(source)}")
-                except StopIteration:
-                    logger.warning(f"Random source depleted")
-            elif key == "A":
-                logger.debug(f"{pregen.rfh.buffer = }")
-            elif key == "S":
-                logger.debug(f"{packer.bag = }")
-            elif key == "N":
-                try:
-                    logger.debug(f"{pregen.rfh.buffer = }, -> popping {pregen.rfh.buffer.popleft()}")
-                except IndexError:
-                    logger.debug(f"Nothing to pop from {pregen.rfh.buffer = }")
-            elif key == "B":
-                try:
-                    logger.info(f"{packer.bag = }, -> popping {next(bag)}")
-                except StopIteration as err:
-                    break
             elif key == "Z":
-                logger.info(f"{next_three.window = }")
+                logger.info(f"{self.plan.next_window.window = }")
             elif key == "X":
-                logger.info(f"{next_three.window} --> {next(next_pieces)} --> {next_three.window}")
-            elif key == "Q":
-                break
+                logger.info(f"Tetromino: {self.plan.next_window.window} --> {next(self.plan.next_window)} --> {self.plan.next_window.window}")
             elif key == "M":
                 textmenu.show(options)
+            elif key == "Q":
+                break
         logger.debug("Finished runing game with no gui")
 
 
@@ -152,7 +123,7 @@ def run(config: config_loader.Config) -> None:
         pregen.download_bytes()
     else:
         game = Game(config)
-        if config.cli.gui is not None:
+        if config.cli.gui != "cli":
             game.run_gui()
         else:
             game.run_nogui()

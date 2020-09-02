@@ -12,7 +12,6 @@ from absolutris import utils
 from absolutris import logging_conf
 from absolutris import config_loader
 from absolutris import game
-# from absolutris import generators
 
 
 # Setup logging

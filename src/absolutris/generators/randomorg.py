@@ -29,9 +29,10 @@ class RandomSource:
         while True:
             try:
                 self.buffer = deque(self._source.get(), self._cache_length * 2)
+                logger.debug("queue filled")
                 break
             except Empty as e:
-                logger.debug("q empty")
+                continue
     def check_quota(self) -> int:
         return self._client.get_bits_left()
     def pop(self) -> int:
