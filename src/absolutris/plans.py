@@ -7,7 +7,7 @@ import logging
 from absolutris import level
 from absolutris import scoring
 from absolutris import next_window
-from absolutris.generators import randomorg as src
+from absolutris.generators import randomorg
 
 
 # Setup logging
@@ -20,11 +20,15 @@ class Plan:
     """
     Game plan. Contains the sequence of levels which can be played in a game.
     """
+    name: str
+    version: str
     levels: tuple[level.Level]
     next_window: next_window.Next_Window
 
 
 default = Plan(
+    name = "default"
+    version "0.0.1"
     levels=(
         level.Level(
             message="Level 0",
@@ -39,7 +43,7 @@ default = Plan(
             condition=lambda stat: stat.lines == 3,
             ),
         ),
-    next_window=next_window.Next_Window(source=src.source(), length=3)
+    next_window=next_window.Next_Window(source=randomorg.source(), length=1)
     )
 
 

@@ -63,9 +63,8 @@ class Game:
         self.pygame_running = True
         logger.info(f"Entering main game loop")
         while self.pygame_running:
-            # if testing:
-                # test_input = (yield)
-                # pygame.event.post(test_input)
+            pygame.clock.tick(framerate=config.pygame_framerate)
+            # ┏ React to inputs
             for event in pygame.event.get():
                 # React to quitting pygame, e.g. by closing the game window
                 if event.type == pygame.QUIT:
@@ -82,6 +81,11 @@ class Game:
                             logger.debug("User pressed Ctrl-Q to quit the game")
                             self.pygame_running = False
                             break
+            # ┗ End of React to inputs
+            # ┏ Move sprites, collision detection
+            # ┗ End of Move sprites, collision detection
+            # ┏ Draw
+            # ┗ End of Draw
         logger.info(f"Left main game loop")
         pygame.quit()
         logger.debug("Finished running game with {self.config.cli.gui} gui")

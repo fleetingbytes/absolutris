@@ -31,8 +31,8 @@ class Config():
         self.config_parser.optionxform = str
         try:
             self.config_parser.read_file(open(self.path_to_config_file))
-            logger.info(f"{self.path_to_config_file} read")
             self.parse()
+            logger.info(f"{self.path_to_config_file} read")
         except FileNotFoundError:
             logger.info("config file missing")
             self.create_config_file()
@@ -41,8 +41,9 @@ class Config():
         Creates the default config file
         """
         logger.info(f"creating {self.path_to_config_file}")
-        self.config_parser.add_section("GUI")
-        self.config_parser.set("GUI", "# GUI settings are not necessary here")
+        self.config_parser.add_section("Pygame")
+        self.config_parser.set("Pygame", "# Pygame-specific settings")
+        self.config_parser.set("Pygame", "framerate", "60")
         with open(self.path_to_config_file, mode="w", encoding="utf-8") as configfh:
             self.config_parser.write(configfh)
         self.read_config_file()
@@ -64,7 +65,7 @@ class Config():
         """
         Parses the configuration files into usable attributes
         """
-        pass
+        self.pygame_framerate = self.config_parser.getint("Pygame", "framerate")
 
 
 if __name__ == "__main__":
