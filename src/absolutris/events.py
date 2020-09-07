@@ -2,24 +2,28 @@
 
 import enum
 
+
 @enum.unique
 class Spawn(enum.IntFlag):
-    T = 0b000
-    J = 0b001
-    Z = 0b010
-    O = 0b011
-    S = 0b100
-    L = 0b101
-    I = 0b110
+    O = 0b000
+    I = 0b001
+    L = 0b010
+    T = 0b011
+    Z = 0b100
+    S = 0b101
+    J = 0b110
     MOVE_CURRENT = 0b111
 
 
+@enum.unique
 class Move(enum.IntFlag):
     ROW = 0b100
     COLUMN = 0b010
     ROTATE = 0b001
+    LOCK = 0b000
 
 
+@enum.unique
 class Rotate(enum.IntEnum):
     NORTH = 0b00
     WEST = 0b01
@@ -27,6 +31,7 @@ class Rotate(enum.IntEnum):
     EAST = 0b11
 
 
+@enum.unique
 class Column(enum.IntEnum):
     Q = 0
     A = 1
@@ -41,8 +46,12 @@ class Column(enum.IntEnum):
     Y = 10
     H = 11
     U = 12
+    # J = 13
+    # I = 14
+    # K = 15
 
 
+@enum.unique
 class Row(enum.IntEnum):
     ROW32 = 31
     ROW31 = 30
@@ -79,8 +88,9 @@ class Row(enum.IntEnum):
 
 
 if __name__ == "__main__":
-    pass
+    def test_move():
+        for move in (Move.ROW, Move.COLUMN, Move.ROTATE, Move.LOCK):
+            for n in range(8):
+                print(f"Move({n}) & {repr(move)}: {bool(Move(n) & move)}")
+    test_move()
 
-
-if __name__ == "__main__":
-    pass

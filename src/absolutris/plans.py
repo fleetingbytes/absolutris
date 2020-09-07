@@ -27,8 +27,8 @@ class Plan:
 
 
 default = Plan(
-    name = "default"
-    version "0.0.1"
+    name = "default",
+    version = "0.0.1",
     levels=(
         level.Level(
             message="Level 0",

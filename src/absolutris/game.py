@@ -59,11 +59,12 @@ class Game:
         """
         logger.debug(f"Running game with {self.config.cli.gui} gui")
         pygame.init()
+        clock = pygame.time.Clock()
         self.setup_game_window()
         self.pygame_running = True
         logger.info(f"Entering main game loop")
         while self.pygame_running:
-            pygame.clock.tick(framerate=config.pygame_framerate)
+            clock.tick(self.config.pygame_framerate)
             # ┏ React to inputs
             for event in pygame.event.get():
                 # React to quitting pygame, e.g. by closing the game window
@@ -75,9 +76,9 @@ class Game:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_q:
                         # distinguish between Q and Ctrl-Q
-                        mods = pygame.key.get_mods()
+                        # mods = pygame.key.get_mods()
                         # End main loop if Ctrl-Q was pressed
-                        if mods & pygame.KMOD_CTRL:
+                        if event.mod & pygame.KMOD_CTRL:
                             logger.debug("User pressed Ctrl-Q to quit the game")
                             self.pygame_running = False
                             break
@@ -98,10 +99,12 @@ class Game:
         the non-graphic-related attributes like playfield size etc.
         """
         logger.debug("Runing game with no gui")
+        events = ["DROP", "ROTATE", "MOVE_LEFT"]
         textmenu = menu.Text_Menu()
         options = collections.OrderedDict((
                 ("Z", "Show next_pieces"),
                 ("X", "Pull from next_pieces"),
+                ("C", "Consume an input event"),
                 ("M", "Show Menu"),
                 ("Q", "Quit"),
                 ))
@@ -114,6 +117,8 @@ class Game:
                 logger.info(f"{self.plan.next_window.window = }")
             elif key == "X":
                 logger.info(f"Tetromino: {self.plan.next_window.window} --> {next(self.plan.next_window)} --> {self.plan.next_window.window}")
+            elif key == "C":
+                pass
             elif key == "M":
                 textmenu.show(options)
             elif key == "Q":
@@ -124,6 +129,7 @@ class Game:
 def run(config: config_loader.Config) -> None:
     if config.cli.download:
         logger.debug("Downloading random bits")
+        from absolutris.generators import pregen
         pregen.download_bytes()
     else:
         game = Game(config)
