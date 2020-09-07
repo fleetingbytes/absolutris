@@ -4,16 +4,6 @@ Implementation of tetris in pygame
 
 ### Display Info
 
-Answer:
-The common factors are:
-
-    1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 40, 60, 120
-
-The Greatest Common Factor:
-
-    GCF = 120
-
-Solution
 The factors of 1080 are:
 
     1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 27, 30, 36, 40, 45, 54, 60, 72, 90, 108, 120, 135, 180, 216, 270, 360, 540, 1080
@@ -41,9 +31,10 @@ The common factors are:
     60	32x18
     120	16x9
 
-The Greatest Common Factor:
+The common factors are:
 
-    GCF = 120
+    1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 24, 30, 40, 60, 120
+    GCF = 120 (Greatest common factor)
 
 
 ### Tetromino Production Pipeline
