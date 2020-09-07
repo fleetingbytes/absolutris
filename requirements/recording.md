@@ -35,17 +35,17 @@ Header and footer are human-readable text encoded in UTF-8. Data block is binary
 
 ### Header Format Specification
 
------BEGIN ABSOLUTRIS GAME METADATA-----
-Playfield width: 10
-Playfield height: 20
-Plan name: default
-Plan version: 0.0.1
------END ABSOLUTRIS GAME METADATA-----
------BEGIN ABSOLUTRIS GAME DATA-----
+		-----BEGIN ABSOLUTRIS GAME METADATA-----
+		Playfield width: 10
+		Playfield height: 20
+		Plan name: default
+		Plan version: 0.0.1
+		-----END ABSOLUTRIS GAME METADATA-----
+		-----BEGIN ABSOLUTRIS GAME DATA-----
 
 ### Footer Format Specification
 
------END ABSOLUTRIS GAME DATA-----
+		-----END ABSOLUTRIS GAME DATA-----
 
 ### Data Block Structure
 
@@ -81,12 +81,12 @@ A frame with no events is recorded as bit 0.  A frame with some events is record
 
 A frame can only bear one event. It is one of:
 
-* Spawning a tetromino
-* Tetromino manipulation:
-		* Changing row
-		* Changing column
-		* Changing rotation
-		* Locking a tetromino (or hard-dropping)
+- Spawning a tetromino
+- Tetromino manipulation:
+    - Changing row
+    - Changing column
+    - Changing rotation
+    - Locking a tetromino (or hard-dropping)
 
 Changing the row, column, or rotation can be combined if such moves were issued in one of the previous frames but could not be performed before (because of local restrictions).
 
