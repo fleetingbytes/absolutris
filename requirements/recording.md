@@ -35,17 +35,17 @@ Header and footer are human-readable text encoded in UTF-8. Data block is binary
 
 ### Header Format Specification
 
-		-----BEGIN ABSOLUTRIS GAME METADATA-----
-		Playfield width: 10
-		Playfield height: 20
-		Plan name: default
-		Plan version: 0.0.1
-		-----END ABSOLUTRIS GAME METADATA-----
-		-----BEGIN ABSOLUTRIS GAME DATA-----
+	-----BEGIN ABSOLUTRIS GAME METADATA-----
+	Playfield width: 10
+	Playfield height: 20
+	Plan name: default
+	Plan version: 0.0.1
+	-----END ABSOLUTRIS GAME METADATA-----
+	-----BEGIN ABSOLUTRIS GAME DATA-----
 
 ### Footer Format Specification
 
-		-----END ABSOLUTRIS GAME DATA-----
+	-----END ABSOLUTRIS GAME DATA-----
 
 ### Data Block Structure
 
