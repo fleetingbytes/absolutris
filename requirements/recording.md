@@ -83,6 +83,7 @@ A frame can only bear one event. It is one of:
 
 - Spawning a tetromino
 - Tetromino manipulation:
+    - Soft-drop
     - Changing row
     - Changing column
     - Changing rotation
@@ -116,16 +117,37 @@ Example of a spawn event in a game plan without visible Next Window:
 
 ###### Tetromino manipulation
 
-Tetromino manipulation event is marked by the bits 0b111 followed by a bitfield of another three bits with information about the manipulation type:
+Tetromino manipulation event is marked by the bits 0b111 followed by a soft-drop bit. If the soft-drop bit is 1, we conclude that this was a soft-drop event and thus no other event could have happened in this frame.
 
-                 1 111 1 0 0 (...)
-                 ^  ^  ^ ^ ^
-                 |  |  | | |
-    Eventful Frame  |  | | Bit indicating whether rotation was changed.
+                 1 111 1
+                 ^  ^  ^
+                 |  |  |
+    Eventful Frame  |  Soft-drop
+                    |
+    Manipulating previously spawned tetromino
+
+If the soft-drop bit is 0, this means that a soft-drop did not occur and further information follows:
+
+                 1 111 0 (...)
+                 ^  ^  ^
+                 |  |  |
+    Eventful Frame  |  Soft-drop
+                    |
+    Manipulating previously spawned tetromino
+
+
+a bitfield of another three bits with information about the manipulation type:
+
+                 1 111 0 1 0 0 (...)
+                 ^  ^  ^ ^ ^ ^
+                 |  |  | | | |
+    Eventful Frame  |  | | | Bit indicating whether rotation was changed.
+                    |  | | |
+                    |  | | Bit indicating whether column was changed.
                     |  | |
-                    |  | Bit indicating whether column was changed.
+                    |  | Bit indicating whether row was changed.
                     |  |
-                    |  Bit indicating whether row was changed.
+                    |  Soft-drop
                     |
     Manipulating previously spawned tetromino
 
@@ -140,19 +162,21 @@ Manipulation types and implications for following data:
 * 0b011 - column and rotation changed -> read 4 bits for column and then 2 more bits for rotation
 * 0b111 - row, column and rotation changed -> read 5 bits for row, 4 bits for column and then 2 more bits for rotation
 
-Thus an eventful frame is encoded with a total of 7, 9, 11, 12, 13, 14, 16, or 18 bits. The longest possible frame information look like this:
+Thus an eventful frame is encoded with a total of 4, 5, 7, 8, 10, 12, 13, 14, 15, 17, or 19 bits. The longest possible frame information can look like this:
 
 
-                 1 111 111 01101 1010 01
-                 ^  ^   ^    ^     ^   ^
-                 |  |   |    |     |   |
-    Eventful frame  |   |    |     |   Change rotation to: West
-                    |   |    |     |
-                    |   |    |     Position piece in column 10
-                    |   |    |
-                    |   |    Position piece in row 13
-                    |   |
-                    |   Bitfield indicating what changed (row, column, and rotation)
+                 1 111 0 111 01101 1010 01
+                 ^  ^  ^  ^    ^     ^   ^
+                 |  |  |  |    |     |   |
+    Eventful frame  |  |  |    |     |   Change rotation to: West
+                    |  |  |    |     |
+                    |  |  |    |     Position piece in column 10
+                    |  |  |    |
+                    |  |  |    Position piece in row 13
+                    |  |  |
+                    |  |  Bitfield indicating what changed (row, column, and rotation)
+                    |  |
+                    |  Soft-drop
                     |
     Manipulating previously spawned tetromino
 
