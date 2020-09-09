@@ -16,6 +16,12 @@ class Spawn(enum.IntFlag):
 
 
 @enum.unique
+class Soft_Drop(enum.IntEnum):
+    SOFT_DROP = 0b1
+    OTHER = 0b0
+
+
+@enum.unique
 class Move(enum.IntFlag):
     ROW = 0b100
     COLUMN = 0b010
