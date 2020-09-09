@@ -4,7 +4,18 @@ import enum
 
 
 @enum.unique
-class Spawn(enum.IntFlag):
+class Next(enum.IntEnum):
+    O = 0b000
+    I = 0b001
+    L = 0b010
+    T = 0b011
+    Z = 0b100
+    S = 0b101
+    J = 0b110
+
+
+@enum.unique
+class Spawn(enum.IntEnum):
     O = 0b000
     I = 0b001
     L = 0b010
