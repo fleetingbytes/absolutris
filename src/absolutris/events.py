@@ -27,9 +27,17 @@ class Spawn(enum.IntEnum):
 
 
 @enum.unique
-class Soft_Drop(enum.IntEnum):
+class Soft_Drop_Event(enum.IntEnum):
     SOFT_DROP = 0b1
     OTHER = 0b0
+
+
+@enum.unique
+class Soft_Drop_Type(enum.IntEnum):
+    ULTIMATE = 0b00
+    ONE = 0b01
+    ANTEPENULTIMATE = 0b10
+    PENULTIMATE = 0b11
 
 
 @enum.unique

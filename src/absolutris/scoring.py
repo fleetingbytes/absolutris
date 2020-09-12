@@ -31,6 +31,8 @@ class NES_Scoring(Scoring):
     triple: int = dataclasses.field(init=False)
     tetris: int = dataclasses.field(init=False)
     level: dataclasses.InitVar[int] = 0
+    def hard_drop(self, rows) -> int:
+        return rows * DEFAULT_SOFT_DROP_FACTOR
     def __post_init__(self, level) -> None:
         self.single = 40 * (level + 1)
         self.double = 100 * (level + 1)

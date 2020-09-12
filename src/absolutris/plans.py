@@ -23,7 +23,20 @@ class Plan:
     name: str
     version: str
     levels: tuple[level.Level]
+    current_level: level.Level = dataclasses.field(init=False)
     next_window: next_window.Next_Window
+    def __post_init__(self) -> None:
+        self.current_level = self.levels[0]
+    def select_level(self, stats: statistics.Statistics) -> level.Level:
+        """
+        Checks all levels against statistics and returns the
+        highest level which is allowed to start, i.e. for which
+        lvl.condition(stats) == True
+        """
+        try:
+            self.current_level = max(self.levels[index] for index, lvl in enumerate(self.levels) if lvl.condition(stats))
+        except ValueError:
+            pass
 
 
 default = Plan(

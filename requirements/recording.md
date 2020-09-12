@@ -47,11 +47,15 @@ Header and footer are human-readable text encoded in UTF-8. Data block is binary
 
 	-----END ABSOLUTRIS GAME DATA-----
 
+The remaining least significant bits in the byte before this are set to 0.
+
 ### Data Block Structure
+
+Data Block starts with the sequence of pieces in the Next Window.
 
 #### Next Window Content
 
-Data Block starts with the sequence of pieces in the Next Window. 
+This part contains the information about the tetrominoes contained in the Next Window before the first tetromino of the game is spawned onto the playfield.
 
 #### Frames
 
@@ -71,7 +75,7 @@ Each tetromino in the Next Window is represented by three bits. The Game Plan pr
 * S: 5
 * J: 6
 
-A game plan with Next Window length of 4 will produce 12 bits of data.
+A game plan with Next Window length of 4 will produce 12 bits of data. A plan without Next Window will have no bits two write here.
 
 #### Frame Encoding
 
@@ -117,16 +121,24 @@ Example of a spawn event in a game plan without visible Next Window:
 
 ###### Tetromino manipulation
 
-Tetromino manipulation event is marked by the bits 0b111 followed by a soft-drop bit. If the soft-drop bit is 1, we conclude that this was a soft-drop event and thus no other event could have happened in this frame.
+Tetromino manipulation event is marked by the bits 0b111 followed by a soft-drop bit. If the soft-drop bit is 1, we read two more bits specifying the soft-drop type. After this, no more information is in this frame.
 
-                 1 111 1
-                 ^  ^  ^
-                 |  |  |
-    Eventful Frame  |  Soft-drop
+                 1 111 1 01
+                 ^  ^  ^  ^
+                 |  |  |  |
+    Eventful Frame  |  |  Soft-drop type: One tile
+                    |  |
+                    |  Soft-drop
                     |
     Manipulating previously spawned tetromino
 
-If the soft-drop bit is 0, this means that a soft-drop did not occur and further information follows:
+Soft-drop types:
+* 0b00 - Ultimate, soft-drop to the lowest possible tile, but do not lock the piece
+* 0b01 - One, soft-drop by one tile
+* 0b10 - Antepenultimate, soft-drop two tiles above ultimate (if this target position is below the current position)
+* 0b11 - Penultimate, soft-drop one tile above ultimate (if this target position is below the current position)
+
+If the soft-drop bit is 0, this means that a soft-drop did not occur and we need to read three more bits of further information.
 
                  1 111 0 (...)
                  ^  ^  ^
@@ -162,7 +174,7 @@ Manipulation types and implications for following data:
 * 0b011 - column and rotation changed -> read 4 bits for column and then 2 more bits for rotation
 * 0b111 - row, column and rotation changed -> read 5 bits for row, 4 bits for column and then 2 more bits for rotation
 
-Thus an eventful frame is encoded with a total of 4, 5, 7, 8, 10, 12, 13, 14, 15, 17, or 19 bits. The longest possible frame information can look like this:
+Thus an eventful frame is encoded with a varying amount of bits. The longest possible frame information can look like this:
 
 
                  1 111 0 111 01101 1010 01
